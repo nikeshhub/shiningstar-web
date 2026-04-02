@@ -1,0 +1,31 @@
+.card {
+  position: relative;
+  background-color: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  transition: transform var(--transition-slow), border-color var(--transition), box-shadow var(--transition-slow);
+  overflow: hidden;
+}
+
+.card__accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--blue);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-slow);
+}
+
+.card--hover:hover {
+  transform: translateY(-4px);
+  border-color: var(--blue-mid);
+  box-shadow: var(--shadow-card);
+}
+
+.card--hover:hover .card__accent {
+  transform: scaleX(1);
+}

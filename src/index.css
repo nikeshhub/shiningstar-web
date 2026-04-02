@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Colors */
+  --blue: #1B4FD8;
+  --blue-light: #EEF3FF;
+  --blue-mid: #C7D6FC;
+  --ink: #0A0F1E;
+  --body: #3D4460;
+  --muted: #8A91AA;
+  --border: #E8EAF0;
+  --bg: #FFFFFF;
+  --bg2: #F7F8FC;
+
+  /* Fonts */
+  --font-display: 'Fraunces', serif;
+  --font-ui: 'Plus Jakarta Sans', sans-serif;
+
+  /* Spacing */
+  --section-padding-vertical: 96px;
+  --section-padding-horizontal: 64px;
+  --nav-height: 68px;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 100px;
+  --radius-button: 10px;
+
+  /* Shadows */
+  --shadow-cta: 0 4px 24px rgba(27, 79, 216, 0.3);
+  --shadow-card: 0 8px 32px rgba(10, 15, 30, 0.08);
+
+  /* Transitions */
+  --transition: 0.15s ease;
+  --transition-slow: 0.2s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--body);
+  background-color: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: clamp(44px, 5vw, 72px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+h2 {
+  font-size: clamp(36px, 4vw, 54px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+h3 {
+  font-size: clamp(24px, 2.5vw, 32px);
+}
+
+em {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--blue);
+}
+
+p {
+  font-family: var(--font-ui);
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--body);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}

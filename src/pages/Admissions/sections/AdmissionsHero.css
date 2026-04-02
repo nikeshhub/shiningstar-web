@@ -1,0 +1,64 @@
+.admissions-hero {
+  position: relative;
+  background-color: var(--bg2);
+  padding: calc(var(--nav-height) + 80px) var(--section-padding-horizontal) 80px;
+  overflow: hidden;
+}
+
+.admissions-hero__circle {
+  position: absolute;
+  top: -100px;
+  right: -50px;
+  width: 280px;
+  height: 280px;
+  background-color: var(--blue-light);
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.admissions-hero__container {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+}
+
+.admissions-hero__breadcrumb {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.admissions-hero__breadcrumb-separator {
+  margin: 0 8px;
+}
+
+.admissions-hero__description {
+  font-size: 20px;
+  line-height: 1.6;
+  color: var(--body);
+  margin-top: 20px;
+  margin-bottom: 32px;
+  max-width: 640px;
+}
+
+.admissions-hero__actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .admissions-hero {
+    padding: calc(var(--nav-height) + 48px) 24px 48px;
+  }
+
+  .admissions-hero__actions {
+    flex-direction: column;
+  }
+
+  .admissions-hero__actions .btn {
+    width: 100%;
+  }
+}
