@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+
+// Components
+import SplashScreen from "./components/SplashScreen/SplashScreen";
 
 // Static Pages
 import { Homepage } from "./pages/Homepage/homepage";
@@ -108,9 +111,16 @@ const theme = createTheme({
 });
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
+  const handleLoadComplete = () => {
+    setShowSplash(false);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      {showSplash && <SplashScreen onLoadComplete={handleLoadComplete} />}
       <Routes>
         {/* Static Public Routes */}
         <Route path="/" element={<Homepage />} />
