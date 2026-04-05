@@ -1,29 +1,78 @@
-import React, { useState } from 'react';
-import SectionLabel from '../../../components/landing/ui/SectionLabel';
-import Button from '../../../components/landing/ui/Button';
-import './InquiryForm.css';
+import React, { useState } from "react";
+import { message } from "antd";
+import SectionLabel from "../../../components/landing/ui/SectionLabel";
+import Button from "../../../components/landing/ui/Button";
+import "./InquiryForm.css";
 
 const InquiryForm = () => {
   const [formData, setFormData] = useState({
-    parentName: '',
-    studentName: '',
-    email: '',
-    phone: '',
-    studentAge: '',
-    grade: '',
-    message: ''
+    parentName: "",
+    studentName: "",
+    email: "",
+    phone: "",
+    studentAge: "",
+    grade: "",
+    message: "",
   });
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Inquiry submitted:', formData);
+
+    try {
+      // Send email using Web3Forms
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          access_key: "aa677a60-51e1-4639-b310-8bff457f956b",
+          subject: `Admission Inquiry - ${formData.studentName} (${formData.grade})`,
+          name: formData.parentName,
+          email: formData.email,
+          parent_name: formData.parentName,
+          student_name: formData.studentName,
+          phone: formData.phone,
+          student_age: formData.studentAge,
+          grade: formData.grade,
+          message: formData.message || "No additional message",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        message.success(
+          "Thank you for your inquiry! We will get back to you soon.",
+        );
+        // Reset form
+        setFormData({
+          parentName: "",
+          studentName: "",
+          email: "",
+          phone: "",
+          studentAge: "",
+          grade: "",
+          message: "",
+        });
+      } else {
+        message.error(
+          "Failed to send inquiry. Please try again or contact us directly.",
+        );
+      }
+    } catch (error) {
+      console.error("Error sending inquiry:", error);
+      message.error(
+        "Failed to send inquiry. Please try again or contact us directly.",
+      );
+    }
   };
 
   return (
@@ -31,9 +80,12 @@ const InquiryForm = () => {
       <div className="inquiry-form__container">
         <div className="inquiry-form__header">
           <SectionLabel>Apply Now</SectionLabel>
-          <h2>Admission <em>Inquiry</em></h2>
+          <h2>
+            Admission <em>Inquiry</em>
+          </h2>
           <p className="inquiry-form__intro">
-            Submit your inquiry and our admission team will get back to you shortly
+            Submit your inquiry and our admission team will get back to you
+            shortly
           </p>
         </div>
 
