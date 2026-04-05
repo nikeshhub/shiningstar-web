@@ -3,14 +3,12 @@ import './Marquee.css';
 
 const Marquee = () => {
   const items = [
-    'Excellence in Education',
-    'Character Building',
-    'Community Focused',
-    'Dedicated Faculty',
-    'Holistic Development',
-    'Co-Curricular Activities',
-    'Safe Environment',
-    'Individual Attention',
+    'Practical Learning Environment',
+    'Dedicated & Caring Teachers',
+    'Community-Centered Education',
+    'Discipline & Character Building',
+    'Active Student Participation',
+    'Safe & Supportive Environment',
   ];
 
   return (

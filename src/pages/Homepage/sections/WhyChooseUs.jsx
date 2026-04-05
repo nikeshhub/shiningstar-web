@@ -1,39 +1,40 @@
 import React from 'react';
 import SectionLabel from '../../../components/landing/ui/SectionLabel';
 import Card from '../../../components/landing/ui/Card';
+import { Science, School, People, Psychology, Groups, Shield } from '@mui/icons-material';
 import './WhyChooseUs.css';
 
 const WhyChooseUs = () => {
   const reasons = [
     {
-      icon: '🎯',
-      title: 'Quality Education',
-      description: 'Comprehensive curriculum designed to foster critical thinking, creativity, and academic excellence in every student.'
+      icon: <Science sx={{ fontSize: 48 }} />,
+      title: 'Practical Learning Environment',
+      description: 'Learning that works beyond textbooks, helping students understand real-life applications.'
     },
     {
-      icon: '👨‍🏫',
-      title: 'Expert Faculty',
-      description: 'Dedicated and experienced teachers committed to nurturing each child\'s potential and ensuring personalized attention.'
+      icon: <School sx={{ fontSize: 48 }} />,
+      title: 'Dedicated & Caring Teachers',
+      description: 'Teachers who guide students personally, ensuring every child is supported and understood.'
     },
     {
-      icon: '🏫',
-      title: 'Community Building',
-      description: 'Dedicated facilities including well-equipped classrooms, library, and playground serving the local community for generations.'
+      icon: <People sx={{ fontSize: 48 }} />,
+      title: 'Community-Centered Education',
+      description: 'A school deeply connected with families and local values, building strong roots and responsibility.'
     },
     {
-      icon: '🌱',
-      title: 'Holistic Development',
-      description: 'Focus on character building, leadership skills, and values alongside academic achievement to develop well-rounded individuals.'
+      icon: <Psychology sx={{ fontSize: 48 }} />,
+      title: 'Discipline & Character Building',
+      description: 'Focus on respect, responsibility, and behavior alongside academic learning.'
     },
     {
-      icon: '🎨',
-      title: 'Co-Curricular Activities',
-      description: 'Rich variety of extracurricular programs including sports, arts, music, and cultural activities to discover and nurture talents.'
+      icon: <Groups sx={{ fontSize: 48 }} />,
+      title: 'Active Student Participation',
+      description: 'Encouraging students to engage in classroom activities, presentations, and teamwork.'
     },
     {
-      icon: '🤝',
-      title: 'Community Support',
-      description: 'Strong partnership between school, parents, and community creating a supportive ecosystem for student success.'
+      icon: <Shield sx={{ fontSize: 48 }} />,
+      title: 'Safe & Supportive Environment',
+      description: 'A space where students feel comfortable, motivated, and confident to learn and grow.'
     }
   ];
 

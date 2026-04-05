@@ -1,12 +1,12 @@
-import React from 'react';
-import './Stats.css';
+import React from "react";
+import "./Stats.css";
 
 const Stats = () => {
   const stats = [
-    { value: '220+', label: 'Happy Students' },
-    { value: '12+', label: 'Dedicated Teachers' },
-    { value: '95%', label: 'Pass Rate' },
-    { value: '30+', label: 'Years of Excellence' }
+    { value: "220+", label: "Happy Students" },
+    { value: "12+", label: "Dedicated Teachers" },
+    { value: "99%", label: "Pass Rate" },
+    { value: "30+", label: "Years of Excellence" },
   ];
 
   return (

@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from '../../../components/landing/ui/Button';
+import { Science, School, Shield } from '@mui/icons-material';
 import './Hero.css';
 
 const Hero = () => {
@@ -16,8 +17,8 @@ const Hero = () => {
           </p>
 
           <div className="hero__actions">
-            <Button variant="primary" size="large">Apply Now</Button>
-            <Button variant="secondary" size="large">Explore Programs</Button>
+            <Button variant="primary" size="large" href="/admissions">Apply Now</Button>
+            <Button variant="secondary" size="large" href="/academics">Explore Programs</Button>
           </div>
         </div>
 
@@ -31,7 +32,7 @@ const Hero = () => {
             <div className="hero__metric-label">Teachers</div>
           </div>
           <div className="hero__metric">
-            <div className="hero__metric-value">95%</div>
+            <div className="hero__metric-value">99%</div>
             <div className="hero__metric-label">Pass Rate</div>
           </div>
         </div>
@@ -55,16 +56,16 @@ const Hero = () => {
 
         <div className="hero__cards">
           <div className="hero__card hero__card--1">
-            <div className="hero__card-icon">📚</div>
-            <div className="hero__card-title">Quality Education</div>
+            <div className="hero__card-icon"><Science sx={{ fontSize: 32 }} /></div>
+            <div className="hero__card-title">Practical Learning</div>
           </div>
           <div className="hero__card hero__card--2">
-            <div className="hero__card-icon">🎓</div>
-            <div className="hero__card-title">Dedicated Teachers</div>
+            <div className="hero__card-icon"><School sx={{ fontSize: 32 }} /></div>
+            <div className="hero__card-title">Caring Teachers</div>
           </div>
           <div className="hero__card hero__card--3">
-            <div className="hero__card-icon">🤝</div>
-            <div className="hero__card-title">Community Focused</div>
+            <div className="hero__card-icon"><Shield sx={{ fontSize: 32 }} /></div>
+            <div className="hero__card-title">Safe Environment</div>
           </div>
         </div>
       </div>

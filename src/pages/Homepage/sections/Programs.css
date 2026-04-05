@@ -31,7 +31,9 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  transition: transform var(--transition-slow), box-shadow var(--transition-slow);
+  transition:
+    transform var(--transition-slow),
+    box-shadow var(--transition-slow);
 }
 
 .program-card:hover {
@@ -84,10 +86,6 @@
   font-size: 15px;
   line-height: 1.6;
   color: var(--body);
-}
-
-.programs__cta {
-  text-align: center;
 }
 
 /* Mobile responsive */
