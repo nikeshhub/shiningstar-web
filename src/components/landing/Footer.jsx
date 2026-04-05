@@ -40,7 +40,6 @@ const Footer = () => {
               <li className="footer__link">Pre-Primary (Nursery - UKG)</li>
               <li className="footer__link">Primary (Class 1-5)</li>
               <li className="footer__link">Lower Secondary (Class 6-8)</li>
-              <li className="footer__link">Secondary (Class 9-10)</li>
             </ul>
           </div>
 
@@ -52,10 +51,10 @@ const Footer = () => {
                 Panchthar, Nepal
               </li>
               <li className="footer__text">
-                Phone: +977 XXX-XXXXXXX
+                Phone: +977 9815988535
               </li>
               <li className="footer__text">
-                Email: info@shiningstar.edu.np
+                Email: admin.shiningstar@gmail.com
               </li>
             </ul>
           </div>
