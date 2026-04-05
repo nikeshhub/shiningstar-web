@@ -53,11 +53,11 @@ const Navigation = () => {
           ))}
         </div>
 
-        <div className="nav__actions">
+        {/* <div className="nav__actions">
           <Button variant="primary" size="small" href="/login">
             Login
           </Button>
-        </div>
+        </div> */}
       </div>
     </nav>
   );

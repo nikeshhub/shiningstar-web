@@ -69,7 +69,7 @@
 
 .nav__link {
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--body);
   text-decoration: none;
