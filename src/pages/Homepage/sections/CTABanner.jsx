@@ -19,8 +19,8 @@ const CTABanner = () => {
         </div>
 
         <div className="cta-banner__actions">
-          <Button variant="white" size="large">Get Admission Info</Button>
-          <Button variant="secondary" size="large">Contact Us</Button>
+          <Button variant="white" size="large" href="/admissions">Get Admission Info</Button>
+          <Button variant="secondary" size="large" href="/contact">Contact Us</Button>
         </div>
       </div>
     </section>
