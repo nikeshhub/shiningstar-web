@@ -20,7 +20,7 @@ export const Homepage = () => {
       <WhyChooseUs />
       <Programs />
       <Stats />
-      <NoticesEvents />
+      {/* <NoticesEvents /> */}
       <Testimonials />
       <CTABanner />
       <Footer />

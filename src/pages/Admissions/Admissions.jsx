@@ -15,7 +15,7 @@ const Admissions = () => {
       <AdmissionsHero />
       <AdmissionProcess />
       <Requirements />
-      <AdmissionFees />
+      {/* <AdmissionFees /> */}
       <InquiryForm />
       <Footer />
     </div>
