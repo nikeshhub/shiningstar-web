@@ -1,4 +1,5 @@
 import React from 'react';
+import { LocationOn } from '@mui/icons-material';
 import './ContactInfo.css';
 
 const ContactInfo = () => {
@@ -8,7 +9,7 @@ const ContactInfo = () => {
         <div className="contact-details__grid">
           <div className="contact-details__map">
             <div className="contact-details__map-placeholder">
-              <div className="contact-details__map-icon">📍</div>
+              <div className="contact-details__map-icon"><LocationOn sx={{ fontSize: 48 }} /></div>
               <p>Panchthar, Nepal</p>
             </div>
           </div>
@@ -23,10 +24,10 @@ const ContactInfo = () => {
                 <strong>Address:</strong> Panchthar, Nepal
               </div>
               <div className="contact-details__item">
-                <strong>Phone:</strong> +977 XXX-XXXXXXX
+                <strong>Phone:</strong> +977 9815988535
               </div>
               <div className="contact-details__item">
-                <strong>Email:</strong> info@shiningstar.edu.np
+                <strong>Email:</strong> admin.shiningstar@gmail.com
               </div>
             </div>
           </div>
