@@ -1,27 +1,28 @@
 import React from 'react';
 import SectionLabel from '../../../components/landing/ui/SectionLabel';
 import Card from '../../../components/landing/ui/Card';
+import { MenuBook, Public, Science, Computer } from '@mui/icons-material';
 import './Curriculum.css';
 
 const Curriculum = () => {
   const features = [
     {
-      icon: '📖',
+      icon: <MenuBook sx={{ fontSize: 48 }} />,
       title: 'National Curriculum',
       description: 'Aligned with national education board standards and requirements'
     },
     {
-      icon: '🌍',
+      icon: <Public sx={{ fontSize: 48 }} />,
       title: 'Modern Approach',
       description: 'Contemporary teaching methods with global best practices'
     },
     {
-      icon: '🧪',
+      icon: <Science sx={{ fontSize: 48 }} />,
       title: 'Practical Learning',
       description: 'Hands-on activities and experiments for better understanding'
     },
     {
-      icon: '💻',
+      icon: <Computer sx={{ fontSize: 48 }} />,
       title: 'Digital Integration',
       description: 'Technology-enhanced learning with computer education'
     }
