@@ -10,7 +10,7 @@ const Footer = () => {
           {/* Column 1 - About */}
           <div className="footer__column">
             <div className="footer__logo">
-              <img src="/logo.png" alt="Shining Star English School" className="footer__logo-image" />
+              <img src="https://res.cloudinary.com/duaz5kg1m/image/upload/v1775406211/logo_p6u2km.png" alt="Shining Star English School" className="footer__logo-image" />
               <h3 className="footer__heading">Shining Star</h3>
             </div>
             <p className="footer__text">
