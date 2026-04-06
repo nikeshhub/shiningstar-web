@@ -21,6 +21,10 @@
 .splash-screen__content {
   text-align: center;
   animation: fadeInUp 0.8s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .splash-screen__logo {
@@ -94,6 +98,10 @@
 
 /* Mobile responsive */
 @media (max-width: 768px) {
+  .splash-screen__content {
+    padding: 0 24px;
+  }
+
   .splash-screen__logo {
     width: 100px;
     height: 100px;
