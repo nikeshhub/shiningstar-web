@@ -170,17 +170,10 @@
 
   .nav__container {
     padding: 0 24px;
-    justify-content: center;
-    position: relative;
+    justify-content: space-between;
   }
 
   .nav__logo {
-    flex: 1;
-    justify-content: center;
-  }
-
-  .nav__mobile-toggle {
-    position: absolute;
-    right: 24px;
+    justify-content: flex-start;
   }
 }
