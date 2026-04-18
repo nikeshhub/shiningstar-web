@@ -101,9 +101,9 @@ export default function ExamForm({ examData, onSuccess, onCancel }) {
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Input
-            label="Exam Name *"
+            label="Exam Name"
             name="examName"
             value={formData.examName}
             onChange={handleChange}
@@ -112,9 +112,9 @@ export default function ExamForm({ examData, onSuccess, onCancel }) {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Select
-            label="Exam Type *"
+            label="Exam Type"
             name="examType"
             value={formData.examType}
             onChange={handleChange}
@@ -123,9 +123,9 @@ export default function ExamForm({ examData, onSuccess, onCancel }) {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Select
-            label="Class *"
+            label="Class"
             name="class"
             value={formData.class}
             onChange={handleChange}
@@ -134,9 +134,9 @@ export default function ExamForm({ examData, onSuccess, onCancel }) {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Select
-            label="Subject *"
+            label="Subject"
             name="subject"
             value={formData.subject}
             onChange={handleChange}
@@ -145,9 +145,9 @@ export default function ExamForm({ examData, onSuccess, onCancel }) {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Input
-            label="Exam Date *"
+            label="Exam Date"
             name="examDate"
             type="date"
             value={formData.examDate}
@@ -156,9 +156,9 @@ export default function ExamForm({ examData, onSuccess, onCancel }) {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Input
-            label="Duration (minutes) *"
+            label="Duration (minutes)"
             name="duration"
             type="number"
             value={formData.duration}
@@ -168,9 +168,9 @@ export default function ExamForm({ examData, onSuccess, onCancel }) {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Input
-            label="Total Marks *"
+            label="Total Marks"
             name="totalMarks"
             type="number"
             value={formData.totalMarks}
@@ -180,9 +180,9 @@ export default function ExamForm({ examData, onSuccess, onCancel }) {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Input
-            label="Passing Marks *"
+            label="Passing Marks"
             name="passingMarks"
             type="number"
             value={formData.passingMarks}
@@ -192,9 +192,9 @@ export default function ExamForm({ examData, onSuccess, onCancel }) {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Select
-            label="Status *"
+            label="Status"
             name="status"
             value={formData.status}
             onChange={handleChange}
@@ -203,9 +203,9 @@ export default function ExamForm({ examData, onSuccess, onCancel }) {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <Input
-            label="Academic Year *"
+            label="Academic Year"
             name="academicYear"
             value={formData.academicYear}
             onChange={handleChange}
@@ -214,7 +214,7 @@ export default function ExamForm({ examData, onSuccess, onCancel }) {
           />
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Input
             label="Instructions"
             name="instructions"

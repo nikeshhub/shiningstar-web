@@ -84,7 +84,7 @@ export default function Gallery() {
 
         <Grid container spacing={3}>
           {galleryImages.map((image) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={image.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={image.id}>
               <Card
                 sx={{
                   height: 250,

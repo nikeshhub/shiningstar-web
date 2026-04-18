@@ -21,10 +21,12 @@ import { Edit as EditIcon, Person as PersonIcon, MenuBook as BookIcon } from '@m
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, DetailPage, DetailSection, DetailRow, StatusChip, Table, Toast } from '../../components/common';
 import { classAPI, timetableAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ClassDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [classData, setClassData] = useState(null);
   const [timetableSlots, setTimetableSlots] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +39,7 @@ export default function ClassDetail() {
     coverPhoto: '',
   });
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
+  const canManageClass = user?.role === 'Admin';
 
   useEffect(() => {
     loadClass();
@@ -80,6 +83,10 @@ export default function ClassDetail() {
   };
 
   const handleSaveBook = async () => {
+    if (!canManageClass) {
+      return;
+    }
+
     try {
       const response = await classAPI.updateSubjectBook(id, selectedSubject.subject._id || selectedSubject.subject, bookData);
       if (response.data.success) {
@@ -178,11 +185,11 @@ export default function ClassDetail() {
       title={classData.className}
       backTo="/dashboard/classes"
       loading={false}
-      actions={
+      actions={canManageClass ? (
         <Button startIcon={<EditIcon />} onClick={() => navigate(`/dashboard/classes/edit/${id}`)}>
           Edit Class
         </Button>
-      }
+      ) : null}
     >
       {/* Class Info */}
       <DetailSection title="Class Information">
@@ -313,14 +320,18 @@ export default function ClassDetail() {
                       )}
                     </TableCell>
                     <TableCell align="center">
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={() => handleEditBook(subject)}
-                        title="Edit Book Info"
-                      >
-                        <BookIcon fontSize="small" />
-                      </IconButton>
+                      {canManageClass ? (
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => handleEditBook(subject)}
+                          title="Edit Book Info"
+                        >
+                          <BookIcon fontSize="small" />
+                        </IconButton>
+                      ) : (
+                        <Typography variant="body2" color="text.disabled">-</Typography>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -354,7 +365,7 @@ export default function ClassDetail() {
         </DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 fullWidth
                 label="Book Name"
@@ -363,7 +374,7 @@ export default function ClassDetail() {
                 placeholder="e.g., My English Book"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 fullWidth
                 label="Publication"
@@ -372,7 +383,7 @@ export default function ClassDetail() {
                 placeholder="e.g., Ekta Books"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 fullWidth
                 label="Cost (Rs.)"
@@ -382,7 +393,7 @@ export default function ClassDetail() {
                 placeholder="e.g., 250"
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 fullWidth
                 label="Cover Photo URL (optional)"

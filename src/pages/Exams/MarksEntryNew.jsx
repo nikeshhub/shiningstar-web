@@ -281,7 +281,7 @@ export default function MarksEntryNew() {
             if (!studentMarks) return null;
 
             return (
-              <Grid item xs={12} key={student._id}>
+              <Grid size={12} key={student._id}>
                 <Paper sx={{ p: 2 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Box>

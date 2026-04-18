@@ -127,7 +127,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
               </Typography>
             </Box>
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormField
                   control={control}
                   name="name"
@@ -137,7 +137,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormField
                   control={control}
                   name="dateOfBirth"
@@ -147,7 +147,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormSelect
                   control={control}
                   name="gender"
@@ -158,7 +158,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
               </Grid>
 
               {isEdit && (
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormSelect
                     control={control}
                     name="status"
@@ -176,7 +176,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
                 </Grid>
               )}
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <FormField
                   control={control}
                   name="address"
@@ -203,7 +203,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
               Email and phone number for communication
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormField
                   control={control}
                   name="email"
@@ -214,7 +214,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormField
                   control={control}
                   name="phone"
@@ -240,7 +240,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
               Academic qualifications and employment details
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormField
                   control={control}
                   name="qualification"
@@ -250,7 +250,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormField
                   control={control}
                   name="salary"
@@ -275,7 +275,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
                 </Typography>
               </Box>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={4}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <Box sx={{
                     p: 2,
                     bgcolor: 'background.paper',
@@ -291,7 +291,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <Box sx={{
                     p: 2,
                     bgcolor: 'background.paper',
@@ -307,7 +307,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <Box sx={{
                     p: 2,
                     bgcolor: 'background.paper',

@@ -232,7 +232,7 @@ export default function TeacherDetail() {
           </Typography>
           <Paper sx={{ p: 2, mb: 2 }}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   select
                   fullWidth
@@ -246,7 +246,7 @@ export default function TeacherDetail() {
                   <MenuItem value="Leave">Leave</MenuItem>
                 </TextField>
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   fullWidth
                   label="From"
@@ -256,7 +256,7 @@ export default function TeacherDetail() {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   fullWidth
                   label="To"
@@ -266,7 +266,7 @@ export default function TeacherDetail() {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Button variant="contained" onClick={loadAttendance}>
                   Apply Filters
                 </Button>

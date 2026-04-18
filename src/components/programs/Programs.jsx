@@ -86,7 +86,7 @@ export default function Programs() {
 
         <Grid container spacing={4}>
           {programs.map((program) => (
-            <Grid item xs={12} sm={6} md={4} key={program.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={program.id}>
               <Card
                 sx={{
                   height: '100%',

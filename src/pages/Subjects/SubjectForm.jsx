@@ -168,7 +168,7 @@ export default function SubjectForm() {
               Basic Information
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Subject Name"
@@ -181,7 +181,7 @@ export default function SubjectForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Subject Code"
@@ -195,7 +195,7 @@ export default function SubjectForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Select
                   label="Subject Type"
                   name="subjectType"
@@ -207,7 +207,7 @@ export default function SubjectForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Credit Hours"
@@ -238,7 +238,7 @@ export default function SubjectForm() {
               components
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
                   fullWidth
                   label="Written Marks"
@@ -252,7 +252,7 @@ export default function SubjectForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
                   fullWidth
                   label="Practical Marks"
@@ -266,7 +266,7 @@ export default function SubjectForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
                   fullWidth
                   label="Full Marks"
@@ -285,7 +285,7 @@ export default function SubjectForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Pass Marks"
@@ -299,7 +299,7 @@ export default function SubjectForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Box
                   sx={{
                     p: 2,
@@ -351,7 +351,7 @@ export default function SubjectForm() {
               Additional configuration for this subject
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <FormControlLabel
                   control={
                     <Checkbox

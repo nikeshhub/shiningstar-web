@@ -181,7 +181,7 @@ export default function ProgressReportList() {
       {/* Filters */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={3} alignItems="center">
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <FormControl fullWidth>
               <InputLabel>Select Class</InputLabel>
               <Select
@@ -198,7 +198,7 @@ export default function ProgressReportList() {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <FormControl fullWidth>
               <InputLabel>Academic Year</InputLabel>
               <Select
@@ -215,7 +215,7 @@ export default function ProgressReportList() {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Button
                 variant="contained"
@@ -247,7 +247,7 @@ export default function ProgressReportList() {
       {selectedClass && (
         <Grid container spacing={2}>
           {students.length === 0 && !loading && (
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
                 No students found in this class.
               </Typography>
@@ -261,7 +261,7 @@ export default function ProgressReportList() {
             const grade = hasReport ? report.yearlyTotal?.grade : 'N/A';
 
             return (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={student._id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={student._id}>
                 <Card
                   sx={{
                     height: '100%',

@@ -333,7 +333,7 @@ export default function ExamFormNew() {
               Basic Information
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Exam Name"
@@ -346,7 +346,7 @@ export default function ExamFormNew() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Select
                   label="Academic Year"
                   name="academicYear"
@@ -357,7 +357,7 @@ export default function ExamFormNew() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={formData.examType === "Terminal" ? 4 : 6}>
+              <Grid size={{ xs: 12, md: formData.examType === "Terminal" ? 4 : 6 }}>
                 <Select
                   label="Exam Type"
                   name="examType"
@@ -369,7 +369,7 @@ export default function ExamFormNew() {
               </Grid>
 
               {formData.examType === "Terminal" && (
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Select
                     label="Terminal Number"
                     name="terminalNumber"
@@ -382,7 +382,7 @@ export default function ExamFormNew() {
                 </Grid>
               )}
 
-              <Grid item xs={12} md={formData.examType === "Terminal" ? 4 : 6}>
+              <Grid size={{ xs: 12, md: formData.examType === "Terminal" ? 4 : 6 }}>
                 <Select
                   label="Status"
                   name="status"
@@ -393,7 +393,7 @@ export default function ExamFormNew() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Start Date"
@@ -407,7 +407,7 @@ export default function ExamFormNew() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="End Date"
@@ -421,7 +421,7 @@ export default function ExamFormNew() {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Select
                   label="Select Classes"
                   name="classes"
@@ -476,7 +476,7 @@ export default function ExamFormNew() {
               }}
             >
               <Grid container spacing={2} alignItems="flex-end">
-                <Grid item xs={12} sm={6} md={2.5}>
+                <Grid size={{ xs: 12, sm: 6, md: 2.5 }}>
                   <Select
                     label="Class"
                     name="class"
@@ -494,7 +494,7 @@ export default function ExamFormNew() {
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={6} md={2.5}>
+                <Grid size={{ xs: 12, sm: 6, md: 2.5 }}>
                   <Select
                     label="Subjects (Multiple)"
                     name="subjects"
@@ -520,7 +520,7 @@ export default function ExamFormNew() {
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={6} md={2}>
+                <Grid size={{ xs: 12, sm: 6, md: 2 }}>
                   <TextField
                     fullWidth
                     size="small"
@@ -533,7 +533,7 @@ export default function ExamFormNew() {
                   />
                 </Grid>
 
-                <Grid item xs={6} sm={3} md={1.5}>
+                <Grid size={{ xs: 6, sm: 3, md: 1.5 }}>
                   <TextField
                     fullWidth
                     size="small"
@@ -546,7 +546,7 @@ export default function ExamFormNew() {
                   />
                 </Grid>
 
-                <Grid item xs={6} sm={3} md={1.5}>
+                <Grid size={{ xs: 6, sm: 3, md: 1.5 }}>
                   <TextField
                     fullWidth
                     size="small"
@@ -559,7 +559,7 @@ export default function ExamFormNew() {
                   />
                 </Grid>
 
-                <Grid item xs={6} sm={3} md={1}>
+                <Grid size={{ xs: 6, sm: 3, md: 1 }}>
                   <TextField
                     fullWidth
                     size="small"
@@ -571,7 +571,7 @@ export default function ExamFormNew() {
                   />
                 </Grid>
 
-                <Grid item xs={6} sm={3} md={1}>
+                <Grid size={{ xs: 6, sm: 3, md: 1 }}>
                   <Button
                     variant="contained"
                     size="medium"

@@ -124,9 +124,9 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
               </Typography>
             </Box>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Input
-                  label="Title *"
+                  label="Title"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
@@ -135,9 +135,9 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Input
-                  label="Message *"
+                  label="Message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
@@ -148,9 +148,9 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Select
-                  label="Type *"
+                  label="Type"
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
@@ -159,9 +159,9 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Select
-                  label="Recipients *"
+                  label="Recipients"
                   name="recipients"
                   value={formData.recipients}
                   onChange={handleChange}
@@ -186,7 +186,7 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
               Choose how and when to send this notification
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <FormGroup>
                   <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
                     Notification Channels *
@@ -233,9 +233,9 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
                 </FormGroup>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Select
-                  label="Status *"
+                  label="Status"
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
@@ -245,7 +245,7 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
               </Grid>
 
               {formData.status === 'Scheduled' && (
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Input
                     label="Send At"
                     name="sendAt"

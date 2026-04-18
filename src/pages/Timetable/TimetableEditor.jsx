@@ -238,7 +238,7 @@ export default function TimetableEditor() {
                 {PERIODS.map((period) => (
                   <TableCell key={period}>
                     <Grid container spacing={1}>
-                      <Grid item xs={12}>
+                      <Grid size={12}>
                         <TextField
                           select
                           fullWidth
@@ -269,7 +269,7 @@ export default function TimetableEditor() {
                           ))}
                         </TextField>
                       </Grid>
-                      <Grid item xs={12}>
+                      <Grid size={12}>
                         <Select
                           label="Teacher"
                           name={`teacher-${cls._id}-${period}`}

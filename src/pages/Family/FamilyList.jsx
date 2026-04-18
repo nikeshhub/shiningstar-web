@@ -221,7 +221,7 @@ export default function FamilyList() {
 
       {/* Statistics Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ bgcolor: alpha('#2196f3', 0.05), border: '1px solid', borderColor: alpha('#2196f3', 0.2) }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -239,7 +239,7 @@ export default function FamilyList() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ bgcolor: alpha('#4caf50', 0.05), border: '1px solid', borderColor: alpha('#4caf50', 0.2) }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -257,7 +257,7 @@ export default function FamilyList() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ bgcolor: alpha('#ff9800', 0.05), border: '1px solid', borderColor: alpha('#ff9800', 0.2) }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -275,7 +275,7 @@ export default function FamilyList() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ bgcolor: alpha('#9c27b0', 0.05), border: '1px solid', borderColor: alpha('#9c27b0', 0.2) }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
