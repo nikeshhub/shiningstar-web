@@ -35,7 +35,7 @@ import {
  */
 export const DetailRow = ({ label, value, colSpan = 6 }) => {
   return (
-    <Grid item xs={12} sm={colSpan}>
+    <Grid size={{ xs: 12, sm: colSpan }}>
       <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
         {label}
       </Typography>
