@@ -11,69 +11,71 @@ import {
   Inventory2 as InventoryIcon,
   LocalShipping as ShippingIcon,
   AttachMoney as MoneyIcon,
+  School as SchoolIcon,
 } from '@mui/icons-material';
 import { Input, Select, Button, Toast } from '../../components/common';
-import { inventoryAPI } from '../../services/api';
+import { inventoryAPI, classAPI } from '../../services/api';
 
 export default function InventoryForm({ itemData, onSuccess, onCancel }) {
   const [formData, setFormData] = useState({
     itemName: '',
-    itemCode: '',
     category: '',
     quantity: '',
     unit: '',
     minimumQuantity: '',
     unitPrice: '',
-    supplier: '',
     location: '',
     description: '',
+    applicableClasses: [],
   });
 
+  const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
+
+  useEffect(() => {
+    classAPI.getAll({ status: 'Active' })
+      .then(res => { if (res.data.success) setClasses(res.data.data); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (itemData) {
       setFormData({
         itemName: itemData.itemName || '',
-        itemCode: itemData.itemCode || '',
         category: itemData.category || '',
         quantity: itemData.quantity || '',
         unit: itemData.unit || '',
         minimumQuantity: itemData.minimumQuantity || '',
         unitPrice: itemData.unitPrice || '',
-        supplier: itemData.supplier || '',
         location: itemData.location || '',
         description: itemData.description || '',
+        applicableClasses: itemData.applicableClasses?.map(c => c._id || c) || [],
       });
     }
   }, [itemData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       setLoading(true);
+      const payload = { ...formData };
+      if (payload.category !== 'Books') payload.applicableClasses = [];
 
       if (itemData?._id) {
-        await inventoryAPI.update(itemData._id, formData);
+        await inventoryAPI.update(itemData._id, payload);
         setToast({ open: true, message: 'Item updated successfully!', severity: 'success' });
       } else {
-        await inventoryAPI.create(formData);
+        await inventoryAPI.create(payload);
         setToast({ open: true, message: 'Item added successfully!', severity: 'success' });
       }
-
       setTimeout(() => onSuccess(), 1000);
     } catch (error) {
-      console.error('Error saving item:', error);
       setToast({
         open: true,
         message: error.response?.data?.message || 'Error saving item',
@@ -84,34 +86,13 @@ export default function InventoryForm({ itemData, onSuccess, onCancel }) {
     }
   };
 
-  const categories = [
-    'Stationery',
-    'Books',
-    'Furniture',
-    'Electronics',
-    'Sports Equipment',
-    'Lab Equipment',
-    'Cleaning Supplies',
-    'Office Supplies',
-    'Other',
-  ];
-
-  const units = [
-    'Piece',
-    'Set',
-    'Box',
-    'Pack',
-    'Dozen',
-    'Kg',
-    'Liter',
-    'Meter',
-  ];
-
+  const categories = ['Books', 'Stationery', 'Uniform'];
+  const units = ['Piece', 'Set', 'Box', 'Pack', 'Dozen'];
+  const classOptions = classes.map(c => ({ label: c.className, value: c._id }));
   const totalValue = (parseFloat(formData.quantity) || 0) * (parseFloat(formData.unitPrice) || 0);
 
   return (
     <Box>
-      {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', mb: 1 }}>
           {itemData ? 'Edit Inventory Item' : 'Add Inventory Item'}
@@ -132,31 +113,20 @@ export default function InventoryForm({ itemData, onSuccess, onCancel }) {
               </Typography>
             </Box>
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Input
-                  label="Item Name *"
+                  label="Item Name"
                   name="itemName"
                   value={formData.itemName}
                   onChange={handleChange}
                   required
-                  placeholder="e.g., Whiteboard Marker"
+                  placeholder="e.g., English Book Grade 5"
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <Input
-                  label="Item Code *"
-                  name="itemCode"
-                  value={formData.itemCode}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g., STN-001"
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Select
-                  label="Category *"
+                  label="Category"
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
@@ -165,9 +135,9 @@ export default function InventoryForm({ itemData, onSuccess, onCancel }) {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Select
-                  label="Unit *"
+                  label="Unit"
                   name="unit"
                   value={formData.unit}
                   onChange={handleChange}
@@ -176,7 +146,7 @@ export default function InventoryForm({ itemData, onSuccess, onCancel }) {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Input
                   label="Description"
                   name="description"
@@ -191,6 +161,34 @@ export default function InventoryForm({ itemData, onSuccess, onCancel }) {
           </CardContent>
         </Card>
 
+        {/* Applicable Classes — only for Books */}
+        {formData.category === 'Books' && (
+          <Card sx={{ mb: 3, boxShadow: 2, borderRadius: 2 }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <SchoolIcon color="primary" />
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                  Applicable Classes
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Which classes use this book? Used to auto-fill book sets during distribution.
+              </Typography>
+              <Select
+                label="Classes"
+                name="applicableClasses"
+                value={formData.applicableClasses}
+                onChange={handleChange}
+                options={classOptions}
+                multiple
+                allowNone={false}
+                placeholder="Select classes..."
+                helperText="Select all classes that use this book"
+              />
+            </CardContent>
+          </Card>
+        )}
+
         {/* Stock & Location */}
         <Card sx={{ mb: 3, boxShadow: 2, borderRadius: 2 }}>
           <CardContent sx={{ p: 3 }}>
@@ -204,9 +202,9 @@ export default function InventoryForm({ itemData, onSuccess, onCancel }) {
               Quantity tracking and storage information
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Input
-                  label="Quantity *"
+                  label="Quantity"
                   name="quantity"
                   type="number"
                   value={formData.quantity}
@@ -217,9 +215,9 @@ export default function InventoryForm({ itemData, onSuccess, onCancel }) {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Input
-                  label="Minimum Quantity *"
+                  label="Minimum Quantity"
                   name="minimumQuantity"
                   type="number"
                   value={formData.minimumQuantity}
@@ -230,18 +228,7 @@ export default function InventoryForm({ itemData, onSuccess, onCancel }) {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <Input
-                  label="Supplier"
-                  name="supplier"
-                  value={formData.supplier}
-                  onChange={handleChange}
-                  placeholder="e.g., ABC Stationery"
-                  helperText="Vendor or supplier name"
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Input
                   label="Storage Location"
                   name="location"
@@ -268,19 +255,19 @@ export default function InventoryForm({ itemData, onSuccess, onCancel }) {
               Cost and value tracking
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Input
                   label="Unit Price (Rs.)"
                   name="unitPrice"
                   type="number"
                   value={formData.unitPrice}
                   onChange={handleChange}
-                  placeholder="e.g., 50"
+                  placeholder="e.g., 250"
                   helperText="Price per unit"
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Box sx={{
                   p: 2,
                   bgcolor: alpha('#2e7d32', 0.05),
@@ -313,20 +300,10 @@ export default function InventoryForm({ itemData, onSuccess, onCancel }) {
           bgcolor: alpha('#f5f5f5', 0.5),
           borderRadius: 2,
         }}>
-          <Button
-            variant="outlined"
-            onClick={onCancel}
-            disabled={loading}
-            sx={{ minWidth: 120 }}
-          >
+          <Button variant="outlined" onClick={onCancel} disabled={loading} sx={{ minWidth: 120 }}>
             Cancel
           </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            loading={loading}
-            sx={{ minWidth: 160 }}
-          >
+          <Button type="submit" variant="contained" loading={loading} sx={{ minWidth: 160 }}>
             {itemData ? 'Update Item' : 'Add Item'}
           </Button>
         </Box>
