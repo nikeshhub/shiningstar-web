@@ -1,24 +1,55 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Box,
-  Typography,
-  IconButton,
-  Chip,
-  Tabs,
-  Tab,
-  Badge,
-  Snackbar,
   Alert,
+  Badge,
+  Box,
+  Chip,
+  IconButton,
+  Snackbar,
+  Tab,
+  Tabs,
+  Typography,
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Edit as EditIcon,
   Delete as DeleteIcon,
+  Edit as EditIcon,
+  Schedule as ScheduleIcon,
   Send as SendIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { Table, Button, Card, Dialog } from '../../components/common';
+import { Button, Card, Dialog, Table } from '../../components/common';
 import { notificationAPI } from '../../services/api';
+import { formatBSDate } from '../../utils/nepaliDate';
+
+const TAB_DEFINITIONS = [
+  { label: 'All', value: 'all' },
+  { label: 'Draft', value: 'Draft' },
+  { label: 'Scheduled', value: 'Scheduled' },
+  { label: 'Sent', value: 'Sent' },
+  { label: 'Failed', value: 'Failed' },
+];
+
+const getStatusColor = (status) => {
+  if (status === 'Sent') return 'success';
+  if (status === 'Scheduled') return 'info';
+  if (status === 'Processing') return 'warning';
+  if (status === 'Failed') return 'error';
+  return 'default';
+};
+
+const getChannels = (notification) => {
+  const channels = [];
+
+  if (notification.sendSMS) channels.push('SMS');
+  if (notification.sendEmail) channels.push('Email');
+  if (notification.sendPushNotification) channels.push('App');
+
+  return channels;
+};
+
+const canManageNotification = (notification) =>
+  ['Draft', 'Scheduled', 'Failed'].includes(notification.status);
 
 export default function NotificationList() {
   const navigate = useNavigate();
@@ -27,7 +58,7 @@ export default function NotificationList() {
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [notificationToDelete, setNotificationToDelete] = useState(null);
   const [sendDialog, setSendDialog] = useState({ open: false, notification: null });
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState('all');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
   useEffect(() => {
@@ -39,184 +70,209 @@ export default function NotificationList() {
       setLoading(true);
       const response = await notificationAPI.getAll();
       if (response.data.success) {
-        setNotifications(response.data.data);
+        setNotifications(response.data.data || []);
       }
     } catch (error) {
       console.error('Error loading notifications:', error);
-      setSnackbar({ open: true, message: 'Failed to load notifications. Please check if the server is running.', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Failed to load notifications',
+        severity: 'error',
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAdd = () => {
-    navigate('/dashboard/notifications/add');
-  };
-
-  const handleEdit = (notification) => {
-    navigate(`/dashboard/notifications/edit/${notification._id}`);
-  };
-
   const handleDelete = async () => {
     try {
       await notificationAPI.delete(notificationToDelete._id);
-      setSnackbar({ open: true, message: 'Notification deleted successfully!', severity: 'success' });
+      setSnackbar({ open: true, message: 'Notification deleted successfully', severity: 'success' });
       setDeleteDialog(false);
       setNotificationToDelete(null);
       loadNotifications();
     } catch (error) {
       console.error('Error deleting notification:', error);
-      setSnackbar({ open: true, message: 'Failed to delete notification', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Failed to delete notification',
+        severity: 'error',
+      });
     }
-  };
-
-  const handleSend = (notification) => {
-    setSendDialog({ open: true, notification });
   };
 
   const confirmSend = async () => {
     try {
-      await notificationAPI.send(sendDialog.notification._id);
+      const response = await notificationAPI.send(sendDialog.notification._id);
+      const { successCount = 0, failureCount = 0 } = response.data.data || {};
+      const message = failureCount > 0
+        ? `Sent with ${successCount} success and ${failureCount} failure${failureCount === 1 ? '' : 's'}`
+        : 'Notification sent successfully';
+
       setSendDialog({ open: false, notification: null });
-      setSnackbar({ open: true, message: 'Notification sent successfully!', severity: 'success' });
+      setSnackbar({ open: true, message, severity: failureCount > 0 ? 'warning' : 'success' });
       loadNotifications();
     } catch (error) {
       console.error('Error sending notification:', error);
       setSendDialog({ open: false, notification: null });
-      setSnackbar({ open: true, message: 'Failed to send notification', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Failed to send notification',
+        severity: 'error',
+      });
     }
   };
 
-  const closeSendDialog = () => {
-    setSendDialog({ open: false, notification: null });
-  };
-
   const formatDate = (date) => {
-    return new Date(date).toLocaleString('en-GB');
+    if (!date) return '-';
+    const jsDate = new Date(date);
+    if (Number.isNaN(jsDate.getTime())) return '-';
+    const time = jsDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return `${formatBSDate(jsDate)} ${time}`;
   };
 
   const columns = [
     {
-      field: 'title',
-      headerName: 'Title',
-      width: 250,
+      field: 'message',
+      headerName: 'Message',
+      width: 320,
       renderCell: (row) => (
         <Box>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            {row.title}
+          <Typography variant="body2" sx={{ fontWeight: 500, whiteSpace: 'pre-wrap' }}>
+            {row.message?.length > 100 ? `${row.message.slice(0, 100)}...` : row.message || '-'}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {row.message?.substring(0, 50)}...
+            {row.scheduledDate ? 'Scheduled message' : 'Manual send message'}
           </Typography>
         </Box>
       ),
     },
     {
-      field: 'type',
-      headerName: 'Type',
-      width: 130,
+      field: 'targetAudience',
+      headerName: 'Audience',
+      width: 210,
       renderCell: (row) => (
-        <Chip
-          label={row.type}
-          size="small"
-          color={
-            row.type === 'Emergency' ? 'error' :
-            row.type === 'Important' ? 'warning' :
-            row.type === 'Event' ? 'info' :
-            'default'
-          }
-        />
+        <Box>
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            {row.targetAudience}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {row.totalRecipients || 0} recipient family{row.totalRecipients === 1 ? '' : 'ies'}
+            {row.classes?.length ? ` • ${row.classes.map((cls) => cls.className || cls.name).join(', ')}` : ''}
+          </Typography>
+        </Box>
       ),
     },
     {
-      field: 'recipients',
-      headerName: 'Recipients',
-      width: 150,
-      renderCell: (row) => (
-        <Chip label={row.recipients} size="small" variant="outlined" />
-      ),
-    },
-    {
-      field: 'channel',
+      field: 'channels',
       headerName: 'Channel',
-      width: 120,
-      renderCell: (row) => (
-        <Typography variant="body2">
-          {row.channel?.join(', ')}
-        </Typography>
-      ),
+      width: 140,
+      renderCell: (row) => {
+        const channels = getChannels(row);
+        return (
+          <Typography variant="body2">
+            {channels.length > 0 ? channels.join(', ') : '-'}
+          </Typography>
+        );
+      },
     },
     {
       field: 'status',
       headerName: 'Status',
-      width: 120,
+      width: 140,
       renderCell: (row) => (
         <Chip
           label={row.status}
           size="small"
-          color={
-            row.status === 'Sent' ? 'success' :
-            row.status === 'Scheduled' ? 'info' :
-            'default'
-          }
+          color={getStatusColor(row.status)}
         />
       ),
     },
     {
-      field: 'createdAt',
-      headerName: 'Created',
-      width: 160,
-      renderCell: (row) => formatDate(row.createdAt),
+      field: 'delivery',
+      headerName: 'Delivery',
+      width: 180,
+      renderCell: (row) => (
+        <Box>
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            {row.successCount || 0}/{row.totalRecipients || 0} delivered
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {row.failureCount ? `${row.failureCount} failed` : 'No failures'}
+          </Typography>
+        </Box>
+      ),
+    },
+    {
+      field: 'schedule',
+      headerName: 'Schedule',
+      width: 190,
+      renderCell: (row) => (
+        <Box>
+          <Typography variant="body2">
+            {row.scheduledDate ? formatDate(row.scheduledDate) : 'Manual send'}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Created {formatDate(row.createdAt)}
+          </Typography>
+        </Box>
+      ),
     },
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 150,
+      width: 160,
       renderCell: (row) => (
         <Box sx={{ display: 'flex', gap: 1 }}>
-          {row.status === 'Draft' && (
+          {canManageNotification(row) && (
             <IconButton
               size="small"
               color="success"
-              onClick={() => handleSend(row)}
-              title="Send"
+              onClick={() => setSendDialog({ open: true, notification: row })}
+              title={row.status === 'Scheduled' ? 'Send Now' : 'Send'}
             >
               <SendIcon fontSize="small" />
             </IconButton>
           )}
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={() => handleEdit(row)}
-            title="Edit"
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={() => {
-              setNotificationToDelete(row);
-              setDeleteDialog(true);
-            }}
-            title="Delete"
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+
+          {canManageNotification(row) && (
+            <IconButton
+              size="small"
+              color="primary"
+              onClick={() => navigate(`/dashboard/notifications/edit/${row._id}`)}
+              title="Edit"
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+
+          {canManageNotification(row) && (
+            <IconButton
+              size="small"
+              color="error"
+              onClick={() => {
+                setNotificationToDelete(row);
+                setDeleteDialog(true);
+              }}
+              title="Delete"
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          )}
         </Box>
       ),
     },
   ];
 
-  const draftNotifications = notifications.filter(n => n.status === 'Draft');
-  const sentNotifications = notifications.filter(n => n.status === 'Sent');
+  const counts = notifications.reduce((acc, notification) => {
+    acc.total += 1;
+    acc[notification.status] = (acc[notification.status] || 0) + 1;
+    return acc;
+  }, { total: 0 });
 
-  const stats = {
-    total: notifications.length,
-    draft: draftNotifications.length,
-    sent: sentNotifications.length,
-    scheduled: notifications.filter(n => n.status === 'Scheduled').length,
-  };
+  const filteredNotifications = tabValue === 'all'
+    ? notifications
+    : notifications.filter((notification) => notification.status === tabValue);
 
   return (
     <Box>
@@ -224,102 +280,79 @@ export default function NotificationList() {
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
           Notifications (सूचना व्यवस्थापन)
         </Typography>
-        <Button startIcon={<AddIcon />} onClick={handleAdd}>
+        <Button startIcon={<AddIcon />} onClick={() => navigate('/dashboard/notifications/add')}>
           Create Notification
         </Button>
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        <Card
-          sx={{ flex: 1, bgcolor: 'primary.lighter' }}
-          contentSx={{ textAlign: 'center' }}
-        >
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Card sx={{ flex: 1, minWidth: 180 }} contentSx={{ textAlign: 'center' }}>
           <Typography variant="h4" color="primary.main" sx={{ fontWeight: 'bold' }}>
-            {stats.total}
+            {counts.total || 0}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Total Notifications
           </Typography>
         </Card>
 
-        <Card
-          sx={{ flex: 1, bgcolor: 'warning.lighter' }}
-          contentSx={{ textAlign: 'center' }}
-        >
+        <Card sx={{ flex: 1, minWidth: 180 }} contentSx={{ textAlign: 'center' }}>
           <Typography variant="h4" color="warning.main" sx={{ fontWeight: 'bold' }}>
-            {stats.draft}
+            {(counts.Draft || 0) + (counts.Scheduled || 0)}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Draft
+            Pending Send
           </Typography>
         </Card>
 
-        <Card
-          sx={{ flex: 1, bgcolor: 'success.lighter' }}
-          contentSx={{ textAlign: 'center' }}
-        >
+        <Card sx={{ flex: 1, minWidth: 180 }} contentSx={{ textAlign: 'center' }}>
           <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
-            {stats.sent}
+            {counts.Sent || 0}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Sent
           </Typography>
         </Card>
 
-        <Card
-          sx={{ flex: 1, bgcolor: 'info.lighter' }}
-          contentSx={{ textAlign: 'center' }}
-        >
-          <Typography variant="h4" color="info.main" sx={{ fontWeight: 'bold' }}>
-            {stats.scheduled}
+        <Card sx={{ flex: 1, minWidth: 180 }} contentSx={{ textAlign: 'center' }}>
+          <Typography variant="h4" color="error.main" sx={{ fontWeight: 'bold' }}>
+            {counts.Failed || 0}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Scheduled
+            Failed
           </Typography>
         </Card>
       </Box>
 
+      {notifications.some((notification) => notification.status === 'Processing') && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          One or more notifications are currently being processed.
+        </Alert>
+      )}
+
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-        <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
-          <Tab label={`All (${notifications.length})`} />
-          <Tab
-            label={`Draft (${draftNotifications.length})`}
-            icon={draftNotifications.length > 0 ? <Badge badgeContent={draftNotifications.length} color="warning" /> : null}
-            iconPosition="end"
-          />
-          <Tab label={`Sent (${sentNotifications.length})`} />
+        <Tabs value={tabValue} onChange={(event, value) => setTabValue(value)}>
+          {TAB_DEFINITIONS.map((tab) => {
+            const count = tab.value === 'all' ? counts.total || 0 : counts[tab.value] || 0;
+            return (
+              <Tab
+                key={tab.value}
+                value={tab.value}
+                label={`${tab.label} (${count})`}
+                icon={tab.value === 'Scheduled' && count > 0 ? <Badge badgeContent={count} color="info"><ScheduleIcon fontSize="small" /></Badge> : null}
+                iconPosition="start"
+              />
+            );
+          })}
         </Tabs>
       </Box>
 
-      {tabValue === 0 && (
-        <Table
-          columns={columns}
-          rows={notifications}
-          loading={loading}
-          emptyMessage="No notifications found. Click 'Create Notification' to send one."
-          hover
-        />
-      )}
-
-      {tabValue === 1 && (
-        <Table
-          columns={columns}
-          rows={draftNotifications}
-          loading={loading}
-          emptyMessage="No draft notifications."
-          hover
-        />
-      )}
-
-      {tabValue === 2 && (
-        <Table
-          columns={columns}
-          rows={sentNotifications}
-          loading={loading}
-          emptyMessage="No sent notifications."
-          hover
-        />
-      )}
+      <Table
+        columns={columns}
+        rows={filteredNotifications}
+        loading={loading}
+        emptyMessage="No notifications found. Create one to start sending SMS updates."
+        hover
+      />
 
       <Dialog
         variant="confirm"
@@ -327,7 +360,7 @@ export default function NotificationList() {
         onClose={() => setDeleteDialog(false)}
         onConfirm={handleDelete}
         title="Delete Notification"
-        message={`Are you sure you want to delete notification "${notificationToDelete?.title}"? This action cannot be undone.`}
+        message="Delete this notification? Draft, scheduled, or failed notifications can be removed."
         confirmLabel="Delete"
         confirmColor="error"
       />
@@ -335,10 +368,10 @@ export default function NotificationList() {
       <Dialog
         variant="confirm"
         open={sendDialog.open}
-        onClose={closeSendDialog}
+        onClose={() => setSendDialog({ open: false, notification: null })}
         onConfirm={confirmSend}
-        title="Send Notification"
-        message={`Send notification "${sendDialog.notification?.title}" to ${sendDialog.notification?.recipients}?`}
+        title={sendDialog.notification?.status === 'Scheduled' ? 'Send Scheduled Notification Now' : 'Send Notification'}
+        message={`Send this message to ${sendDialog.notification?.totalRecipients || 0} recipient family${sendDialog.notification?.totalRecipients === 1 ? '' : 'ies'} now?`}
         confirmLabel="Send"
         confirmColor="primary"
       />
