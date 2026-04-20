@@ -53,7 +53,7 @@ const Input = ({
       rows={multiline ? rows : undefined}
       placeholder={placeholder}
       size={size}
-      InputLabelProps={type === 'date' || type === 'datetime-local' ? { shrink: true, ...InputLabelProps } : InputLabelProps}
+      InputLabelProps={type === 'date' || type === 'datetime-local' || type === 'time' ? { shrink: true, ...InputLabelProps } : InputLabelProps}
       {...otherProps}
     />
   );
