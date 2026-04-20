@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import Button from '../../components/landing/ui/Button';
-import './Login.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import Button from "../../components/landing/ui/Button";
+import { getCurrentBSDateParts } from "../../utils/nepaliDate";
+import "./Login.css";
+
+const currentBSYear = getCurrentBSDateParts()?.year || "";
 
 export default function Login() {
   const navigate = useNavigate();
   const { login, getDefaultRoute } = useAuth();
   const [formData, setFormData] = useState({
-    identifier: '',
-    password: '',
+    identifier: "",
+    password: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -19,13 +22,13 @@ export default function Login() {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    setError('');
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     const result = await login(formData.identifier, formData.password);
 
@@ -33,7 +36,7 @@ export default function Login() {
       const defaultRoute = getDefaultRoute(result.user.role);
       navigate(defaultRoute);
     } else {
-      setError(result.message || 'Login failed. Please try again.');
+      setError(result.message || "Login failed. Please try again.");
     }
 
     setLoading(false);
@@ -54,10 +57,11 @@ export default function Login() {
         <div className="login-card">
           <div className="login-header">
             <img src="/logo.png" alt="Shining Star" className="login-logo" />
-            <h1 className="login-title">Welcome <em>Back</em></h1>
+            <h1 className="login-title">
+              Welcome <em>Back</em>
+            </h1>
             <p className="login-subtitle">Management System Login</p>
           </div>
-
           <form className="login-form" onSubmit={handleSubmit}>
             {error && (
               <div className="login-error">
@@ -72,7 +76,7 @@ export default function Login() {
                 type="text"
                 name="identifier"
                 className="form-input"
-                placeholder="admin@shiningstar.com or 9841234567"
+                placeholder="Enter your email or phone number"
                 value={formData.identifier}
                 onChange={handleChange}
                 required
@@ -98,28 +102,13 @@ export default function Login() {
               type="submit"
               className="login-button"
             >
-              {loading ? 'Logging in...' : 'Login to Dashboard'}
+              {loading ? "Logging in..." : "Login to Dashboard"}
             </Button>
           </form>
-
-          <div className="login-demo">
-            <div className="login-demo__header">
-              <strong>Demo Credentials:</strong>
-            </div>
-            <div className="login-demo__item">
-              Email/Phone: admin@shiningstar.com or 9841234567
-            </div>
-            <div className="login-demo__item">
-              Password: admin123
-            </div>
-            <div className="login-demo__note">
-              (Create admin user in database to test)
-            </div>
-          </div>
         </div>
 
         <p className="login-footer">
-          © {new Date().getFullYear()} Shining Star English School. All rights reserved.
+          © {currentBSYear} Shining Star English School. All rights reserved.
         </p>
       </div>
     </div>

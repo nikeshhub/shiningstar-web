@@ -59,6 +59,8 @@ export const AuthProvider = ({ children }) => {
 
   const getDefaultRoute = (role) => {
     switch (role) {
+      case 'SuperAdmin':
+        return '/superadmin';
       case 'Parent':
         return '/parent';
       case 'Teacher':
@@ -75,20 +77,7 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post('http://localhost:8000/api/auth/register', userData);
 
       if (response.data.success) {
-        const { user: newUser, token: userToken } = response.data.data;
-
-        // Store in localStorage
-        localStorage.setItem('token', userToken);
-        localStorage.setItem('user', JSON.stringify(newUser));
-
-        // Update state
-        setToken(userToken);
-        setUser(newUser);
-
-        // Set default authorization header
-        axios.defaults.headers.common['Authorization'] = `Bearer ${userToken}`;
-
-        return { success: true };
+        return { success: true, user: response.data.data.user };
       } else {
         return { success: false, message: response.data.message };
       }
