@@ -5,7 +5,6 @@ import {
   School as SchoolIcon,
   Payment as PaymentIcon,
   EventNote as EventNoteIcon,
-  Assignment as AssignmentIcon,
   Inventory as InventoryIcon,
   Notifications as NotificationsIcon,
   Class as ClassIcon,
@@ -13,7 +12,6 @@ import {
   HowToReg as HowToRegIcon,
   TrendingUp as TrendingUpIcon,
   MenuBook as MenuBookIcon,
-  Assessment as AssessmentIcon,
   FamilyRestroom as FamilyIcon,
   ManageAccounts as ManageAccountsIcon,
   PersonAddAlt1 as PersonAddAlt1Icon,
@@ -41,10 +39,6 @@ import SubjectFormPage from '../pages/Subjects/SubjectFormPage';
 import TeacherList from '../pages/Teachers/TeacherList';
 import TeacherDetail from '../pages/Teachers/TeacherDetail';
 import TeacherFormPage from '../pages/Teachers/TeacherFormPage';
-import ExamList from '../pages/Exams/ExamList';
-import ExamFormPage from '../pages/Exams/ExamFormPage';
-import MarksEntryPage from '../pages/Exams/MarksEntryPage';
-import ProgressReportList from '../pages/ProgressReports/ProgressReportList';
 import InventoryList from '../pages/Inventory/InventoryList';
 import InventoryFormPage from '../pages/Inventory/InventoryFormPage';
 import NotificationList from '../pages/Notifications/NotificationList';
@@ -72,13 +66,6 @@ export const dashboardNavigationSections = [
       { text: 'Subjects', icon: MenuBookIcon, path: '/dashboard/subjects', roles: ['Admin', 'Teacher'] },
       { text: 'Teachers', icon: SchoolIcon, path: '/dashboard/teachers', roles: ['Admin'] },
       { text: 'Attendance', icon: EventNoteIcon, path: '/dashboard/attendance', roles: ['Admin', 'Teacher'] },
-    ],
-  },
-  {
-    label: 'ASSESSMENT',
-    items: [
-      { text: 'Exams & Marks', icon: AssignmentIcon, path: '/dashboard/exams', roles: ['Admin', 'Teacher'] },
-      { text: 'Progress Reports', icon: AssessmentIcon, path: '/dashboard/progress-reports', roles: ['Admin', 'Teacher'] },
     ],
   },
   {
@@ -123,11 +110,6 @@ export const dashboardRouteDefinitions = [
   { path: 'teachers/add', element: TeacherFormPage, allowedRoles: ['Admin'], title: 'Add Teacher' },
   { path: 'teachers/edit/:id', element: TeacherFormPage, allowedRoles: ['Admin'], title: 'Edit Teacher' },
   { path: 'teachers/:id', element: TeacherDetail, allowedRoles: ['Admin'], title: 'Teacher Details' },
-  { path: 'exams', element: ExamList, allowedRoles: ['Admin', 'Teacher'], title: 'Exams & Marks' },
-  { path: 'exams/add', element: ExamFormPage, allowedRoles: ['Admin'], title: 'Add Exam' },
-  { path: 'exams/edit/:id', element: ExamFormPage, allowedRoles: ['Admin'], title: 'Edit Exam' },
-  { path: 'exams/:id/marks', element: MarksEntryPage, allowedRoles: ['Admin', 'Teacher'], title: 'Marks Entry' },
-  { path: 'progress-reports', element: ProgressReportList, allowedRoles: ['Admin', 'Teacher'], title: 'Progress Reports' },
   { path: 'inventory', element: InventoryList, allowedRoles: ['Admin'], title: 'Inventory' },
   { path: 'inventory/add', element: InventoryFormPage, allowedRoles: ['Admin'], title: 'Add Inventory' },
   { path: 'inventory/edit/:id', element: InventoryFormPage, allowedRoles: ['Admin'], title: 'Edit Inventory' },
