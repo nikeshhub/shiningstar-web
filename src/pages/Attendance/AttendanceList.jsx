@@ -28,46 +28,41 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button, Toast, Select } from '../../components/common';
+import { Button, Toast, Select, BSDatePicker } from '../../components/common';
 import { attendanceAPI, classAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
+import {
+  formatBSDateWithDay,
+  getBSDateParts,
+  getBSMonthOptions,
+  getBSYearOptions,
+  getCurrentBSDateParts,
+  todayBSDate,
+} from '../../utils/nepaliDate';
 
 export default function AttendanceList() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const isTeacher = user?.role === 'Teacher';
+  const currentBSDate = getCurrentBSDateParts();
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [month, setMonth] = useState(currentBSDate?.month || 1);
+  const [year, setYear] = useState(currentBSDate?.year || 2082);
+  const [selectedDate, setSelectedDate] = useState(todayBSDate());
   const [tabValue, setTabValue] = useState(0);
   const [monthlyReport, setMonthlyReport] = useState(null);
   const [dailyAttendance, setDailyAttendance] = useState(null);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
 
-  const months = [
-    { label: 'January', value: 1 },
-    { label: 'February', value: 2 },
-    { label: 'March', value: 3 },
-    { label: 'April', value: 4 },
-    { label: 'May', value: 5 },
-    { label: 'June', value: 6 },
-    { label: 'July', value: 7 },
-    { label: 'August', value: 8 },
-    { label: 'September', value: 9 },
-    { label: 'October', value: 10 },
-    { label: 'November', value: 11 },
-    { label: 'December', value: 12 },
-  ];
-
-  const years = Array.from({ length: 5 }, (_, i) => {
-    const y = new Date().getFullYear() - 2 + i;
-    return { label: y.toString(), value: y };
-  });
+  const months = getBSMonthOptions();
+  const years = getBSYearOptions({ past: 2, future: 2 });
 
   useEffect(() => {
     loadClasses();
-  }, []);
+  }, [isTeacher]);
 
   // Load filters from URL query parameters
   useEffect(() => {
@@ -81,18 +76,19 @@ export default function AttendanceList() {
       setTabValue(0);
     }
 
-    if (classId) {
+    if (classId && !isTeacher) {
       setSelectedClass(classId);
     }
 
     if (date) {
       setSelectedDate(date);
-      // Also set month and year from the date for monthly view
-      const dateObj = new Date(date);
-      setMonth(dateObj.getMonth() + 1);
-      setYear(dateObj.getFullYear());
+      const bsDate = getBSDateParts(date);
+      if (bsDate) {
+        setMonth(bsDate.month);
+        setYear(bsDate.year);
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, isTeacher]);
 
   useEffect(() => {
     if (selectedClass && month && year && tabValue === 0) {
@@ -110,7 +106,12 @@ export default function AttendanceList() {
     try {
       const response = await classAPI.getAll({ status: 'Active' });
       if (response.data.success) {
-        setClasses(response.data.data);
+        const classList = response.data.data || [];
+        setClasses(classList);
+
+        if (isTeacher) {
+          setSelectedClass(classList[0]?._id || '');
+        }
       }
     } catch (error) {
       console.error('Error loading classes:', error);
@@ -231,18 +232,31 @@ export default function AttendanceList() {
             Filters
           </Typography>
           <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: tabValue === 0 ? 4 : 6 }}>
-              <Select
-                label="Select Class"
-                name="class"
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                options={classes}
-                placeholder="Choose a class"
-                allowNone={true}
-                noneLabel="Choose a class"
-              />
-            </Grid>
+            {isTeacher ? (
+              <Grid size={{ xs: 12, md: tabValue === 0 ? 4 : 6 }}>
+                <Box sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    My Class
+                  </Typography>
+                  <Typography sx={{ fontWeight: 600 }}>
+                    {classes[0]?.className || 'No class teacher assignment found'}
+                  </Typography>
+                </Box>
+              </Grid>
+            ) : (
+              <Grid size={{ xs: 12, md: tabValue === 0 ? 4 : 6 }}>
+                <Select
+                  label="Select Class"
+                  name="class"
+                  value={selectedClass}
+                  onChange={(e) => setSelectedClass(e.target.value)}
+                  options={classes}
+                  placeholder="Choose a class"
+                  allowNone={true}
+                  noneLabel="Choose a class"
+                />
+              </Grid>
+            )}
 
             {tabValue === 0 ? (
               <>
@@ -269,13 +283,11 @@ export default function AttendanceList() {
               </>
             ) : (
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Date"
-                  type="date"
+                <BSDatePicker
+                  label="Date (BS)"
+                  name="selectedDate"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
                 />
               </Grid>
             )}
@@ -498,12 +510,7 @@ export default function AttendanceList() {
                 Daily Attendance Record
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {new Date(selectedDate).toLocaleDateString('en-GB', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })} - {selectedClassName}
+                {formatBSDateWithDay(selectedDate)} - {selectedClassName}
               </Typography>
             </Box>
 

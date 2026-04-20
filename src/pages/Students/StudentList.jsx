@@ -41,6 +41,9 @@ export default function StudentList() {
   const [filterClass, setFilterClass] = useState('');
   const [filterStatus, setFilterStatus] = useState('Active');
   const [deleteDialog, setDeleteDialog] = useState({ open: false, studentId: null, studentName: '' });
+  const canManageStudents = user?.role === 'Admin';
+  const showFeeBalance = user?.role === 'Admin';
+  const isTeacher = user?.role === 'Teacher';
 
   useEffect(() => {
     loadClasses();
@@ -63,7 +66,7 @@ export default function StudentList() {
       setLoading(true);
       const params = {};
       if (search) params.search = search;
-      if (filterClass) params.class = filterClass;
+      if (filterClass && !isTeacher) params.class = filterClass;
       if (filterStatus) params.status = filterStatus;
 
       const response = await studentAPI.getAll(params);
@@ -114,7 +117,7 @@ export default function StudentList() {
       <PageHeader
         title="<em>Students</em> Directory"
         action={
-          <RoleBasedAccess allowedRoles={['Admin', 'Teacher']}>
+          <RoleBasedAccess allowedRoles="Admin">
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -135,7 +138,7 @@ export default function StudentList() {
       <DashboardCard hover={false} sx={{ mb: 2.5 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
           <TextField
-            placeholder="Search by name, ID, or contact..."
+            placeholder={isTeacher ? "Search students in my class..." : "Search by name, ID, or contact..."}
             size="small"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -147,22 +150,24 @@ export default function StudentList() {
               },
             }}
           />
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel sx={{ fontSize: '13px' }}>Class</InputLabel>
-            <Select
-              value={filterClass}
-              label="Class"
-              onChange={(e) => setFilterClass(e.target.value)}
-              sx={{ fontSize: '13px' }}
-            >
-              <MenuItem value="" sx={{ fontSize: '13px' }}>All Classes</MenuItem>
-              {classes.map((cls) => (
-                <MenuItem key={cls._id} value={cls._id} sx={{ fontSize: '13px' }}>
-                  {cls.className}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {!isTeacher && (
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel sx={{ fontSize: '13px' }}>Class</InputLabel>
+              <Select
+                value={filterClass}
+                label="Class"
+                onChange={(e) => setFilterClass(e.target.value)}
+                sx={{ fontSize: '13px' }}
+              >
+                <MenuItem value="" sx={{ fontSize: '13px' }}>All Classes</MenuItem>
+                {classes.map((cls) => (
+                  <MenuItem key={cls._id} value={cls._id} sx={{ fontSize: '13px' }}>
+                    {cls.className}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel sx={{ fontSize: '13px' }}>Status</InputLabel>
             <Select
@@ -264,17 +269,19 @@ export default function StudentList() {
                 >
                   Status
                 </TableCell>
-                <TableCell
-                  sx={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    color: 'text.secondary',
-                  }}
-                >
-                  Fee Balance
-                </TableCell>
+                {showFeeBalance && (
+                  <TableCell
+                    sx={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      color: 'text.secondary',
+                    }}
+                  >
+                    Fee Balance
+                  </TableCell>
+                )}
                 <TableCell
                   align="right"
                   sx={{
@@ -323,21 +330,23 @@ export default function StudentList() {
                     status={getStatusType(student.status)}
                   />
                 </TableCell>
-                <TableCell>
-                  {student.feeBalance?.totalDue > 0 ? (
-                    <Typography sx={{ fontSize: '13px', fontWeight: 600, color: 'error.main' }}>
-                      Due: Rs. {student.feeBalance.totalDue}
-                    </Typography>
-                  ) : student.feeBalance?.totalAdvance > 0 ? (
-                    <Typography sx={{ fontSize: '13px', fontWeight: 600, color: 'success.main' }}>
-                      Adv: Rs. {student.feeBalance.totalAdvance}
-                    </Typography>
-                  ) : (
-                    <Typography sx={{ fontSize: '13px', color: 'text.secondary' }}>
-                      Clear
-                    </Typography>
-                  )}
-                </TableCell>
+                {showFeeBalance && (
+                  <TableCell>
+                    {student.family?.familyFeeBalance?.totalDue > 0 ? (
+                      <Typography sx={{ fontSize: '13px', fontWeight: 600, color: 'error.main' }}>
+                        Due: Rs. {student.family.familyFeeBalance.totalDue}
+                      </Typography>
+                    ) : student.family?.familyFeeBalance?.totalAdvance > 0 ? (
+                      <Typography sx={{ fontSize: '13px', fontWeight: 600, color: 'success.main' }}>
+                        Adv: Rs. {student.family.familyFeeBalance.totalAdvance}
+                      </Typography>
+                    ) : (
+                      <Typography sx={{ fontSize: '13px', color: 'text.secondary' }}>
+                        Clear
+                      </Typography>
+                    )}
+                  </TableCell>
+                )}
                 <TableCell align="right">
                   {/* View Details - All roles can view */}
                   <IconButton
@@ -349,8 +358,8 @@ export default function StudentList() {
                     <InfoIcon fontSize="small" />
                   </IconButton>
 
-                  {/* Edit - Only Admin and Teacher */}
-                  <RoleBasedAccess allowedRoles={['Admin', 'Teacher']}>
+                  {/* Edit - Only Admin */}
+                  {canManageStudents && (
                     <IconButton
                       size="small"
                       color="info"
@@ -359,15 +368,16 @@ export default function StudentList() {
                     >
                       <EditIcon fontSize="small" />
                     </IconButton>
-                  </RoleBasedAccess>
+                  )}
 
-                  {/* Fee Ledger - Only Admin */}
+                  {/* Family Ledger - Only Admin */}
                   <RoleBasedAccess allowedRoles="Admin">
                     <IconButton
                       size="small"
                       color="secondary"
-                      onClick={() => navigate(`/dashboard/fee/ledger/${student._id}`)}
-                      title="Fee Ledger"
+                      onClick={() => navigate(`/dashboard/families/${student.family?._id || student.family}`)}
+                      title="Family Ledger"
+                      disabled={!student.family}
                     >
                       <QrCodeIcon fontSize="small" />
                     </IconButton>
@@ -389,7 +399,7 @@ export default function StudentList() {
             ))}
             {students.length === 0 && !loading && (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                <TableCell colSpan={showFeeBalance ? 8 : 7} align="center" sx={{ py: 4 }}>
                   <Typography
                     sx={{
                       fontSize: '14px',

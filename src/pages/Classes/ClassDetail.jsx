@@ -40,6 +40,7 @@ export default function ClassDetail() {
   });
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
   const canManageClass = user?.role === 'Admin';
+  const showFinancialDetails = user?.role === 'Admin';
 
   useEffect(() => {
     loadClass();
@@ -197,28 +198,32 @@ export default function ClassDetail() {
         <DetailRow label="Status" value={<StatusChip status={classData.status} />} />
         <DetailRow label="Class Teacher" value={classData.classTeacher?.name || 'Not Assigned'} />
         <DetailRow label="Capacity" value={classData.capacity} />
-        <DetailRow
-          label="Monthly Fee"
-          value={
-            <Typography sx={{ fontWeight: 600, color: '#2e7d32' }}>
-              Rs. {classData.monthlyFee || 0}
-            </Typography>
-          }
-        />
+        {showFinancialDetails && (
+          <DetailRow
+            label="Monthly Fee"
+            value={
+              <Typography sx={{ fontWeight: 600, color: '#2e7d32' }}>
+                Rs. {classData.monthlyFee || 0}
+              </Typography>
+            }
+          />
+        )}
       </DetailSection>
 
       {/* Revenue Summary */}
-      <DetailSection title="Revenue Summary">
-        <DetailRow label="Enrolled Students" value={classData.studentCount || 0} />
-        <DetailRow
-          label="Total Monthly Revenue"
-          value={
-            <Typography sx={{ fontWeight: 600, color: '#2e7d32' }}>
-              Rs. {classData.totalMonthlyRevenue || 0}
-            </Typography>
-          }
-        />
-      </DetailSection>
+      {showFinancialDetails && (
+        <DetailSection title="Revenue Summary">
+          <DetailRow label="Enrolled Students" value={classData.studentCount || 0} />
+          <DetailRow
+            label="Total Monthly Revenue"
+            value={
+              <Typography sx={{ fontWeight: 600, color: '#2e7d32' }}>
+                Rs. {classData.totalMonthlyRevenue || 0}
+              </Typography>
+            }
+          />
+        </DetailSection>
+      )}
 
       {/* Timetable */}
       <Box sx={{ mt: 3 }}>

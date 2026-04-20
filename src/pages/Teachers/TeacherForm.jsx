@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { Button, Toast, FormField, FormSelect } from '../../components/common';
 import { teacherAPI } from '../../services/api';
+import { adToBSDate } from '../../utils/nepaliDate';
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
 const teacherSchema = z.object({
@@ -73,7 +74,7 @@ export default function TeacherForm({ teacherData, onSuccess, onCancel }) {
         name: teacherData.name || '',
         email: teacherData.email || '',
         phone: teacherData.phone || '',
-        dateOfBirth: teacherData.dateOfBirth?.split('T')[0] || '',
+        dateOfBirth: adToBSDate(teacherData.dateOfBirth),
         gender: teacherData.gender || '',
         address: teacherData.address || '',
         qualification: teacherData.qualification || '',

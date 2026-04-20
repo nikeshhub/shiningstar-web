@@ -19,13 +19,17 @@ import {
 import { Save as SaveIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { classAPI, attendanceAPI, studentAPI } from '../../services/api';
-import { Toast, Select } from '../../components/common';
+import { Toast, Select, BSDatePicker } from '../../components/common';
+import { todayBSDate } from '../../utils/nepaliDate';
+import { useAuth } from '../../context/AuthContext';
 
 export default function AttendanceMark() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isTeacher = user?.role === 'Teacher';
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(todayBSDate());
   const [students, setStudents] = useState([]);
   const [attendance, setAttendance] = useState({});
   const [existingAttendance, setExistingAttendance] = useState(null);
@@ -34,7 +38,7 @@ export default function AttendanceMark() {
 
   useEffect(() => {
     loadClasses();
-  }, []);
+  }, [isTeacher]);
 
   useEffect(() => {
     if (selectedClass && date) {
@@ -46,7 +50,12 @@ export default function AttendanceMark() {
     try {
       const response = await classAPI.getAll({ status: 'Active' });
       if (response.data.success) {
-        setClasses(response.data.data);
+        const classList = response.data.data || [];
+        setClasses(classList);
+
+        if (isTeacher) {
+          setSelectedClass(classList[0]?._id || '');
+        }
       }
     } catch (error) {
       console.error('Error loading classes:', error);
@@ -160,7 +169,7 @@ export default function AttendanceMark() {
     if (!selectedClass || students.length === 0) {
       setToast({
         open: true,
-        message: 'Please select a class with students to mark attendance',
+        message: isTeacher ? 'No class teacher assignment with active students found' : 'Please select a class with students to mark attendance',
         severity: 'warning',
       });
       return;
@@ -235,26 +244,37 @@ export default function AttendanceMark() {
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
+          {isTeacher ? (
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Box sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <Typography variant="caption" color="text.secondary">
+                  My Class
+                </Typography>
+                <Typography sx={{ fontWeight: 600 }}>
+                  {classes[0]?.className || 'No class teacher assignment found'}
+                </Typography>
+              </Box>
+            </Grid>
+          ) : (
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Select
+                label="Select Class"
+                name="class"
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                options={classes}
+                placeholder="Select Class"
+                allowNone={true}
+                noneLabel="Select Class"
+              />
+            </Grid>
+          )}
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Select
-              label="Select Class"
-              name="class"
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-              options={classes}
-              placeholder="Select Class"
-              allowNone={true}
-              noneLabel="Select Class"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField
-              fullWidth
-              label="Date"
-              type="date"
+            <BSDatePicker
+              label="Date (BS)"
+              name="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              InputLabelProps={{ shrink: true }}
             />
           </Grid>
         </Grid>

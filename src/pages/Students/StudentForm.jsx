@@ -24,6 +24,7 @@ import { IconButton } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, FormField, FormSelect, FormAutocompleteSelect, Toast } from '../../components/common';
 import { studentAPI, classAPI, familyAPI } from '../../services/api';
+import { adToBSDate, todayBSDate } from '../../utils/nepaliDate';
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
 const studentSchema = z.object({
@@ -84,7 +85,7 @@ export default function StudentForm() {
       family: '',
       currentClass: '',
       rollNumber: undefined,
-      admissionDate: new Date().toISOString().split('T')[0],
+      admissionDate: todayBSDate(),
       academicYear: '2081-2082',
       previousSchool: '',
       birthCertificate: '',
@@ -109,12 +110,12 @@ export default function StudentForm() {
           const s = res.data.data;
           reset({
             name: s.name || '',
-            dateOfBirth: s.dateOfBirth?.split('T')[0] || '',
+            dateOfBirth: adToBSDate(s.dateOfBirth),
             gender: s.gender || '',
             family: s.family?._id || s.family || '',
             currentClass: s.currentClass?._id || s.currentClass || '',
             rollNumber: s.rollNumber ?? undefined,
-            admissionDate: s.admissionDate?.split('T')[0] || '',
+            admissionDate: adToBSDate(s.admissionDate),
             academicYear: s.academicYear || '2081-2082',
             previousSchool: s.previousSchool || '',
             birthCertificate: s.birthCertificate || '',

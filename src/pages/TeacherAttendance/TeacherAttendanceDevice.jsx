@@ -13,8 +13,9 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { Button, FormAutocompleteSelect, Toast } from '../../components/common';
+import { Button, FormAutocompleteSelect, Toast, BSDatePicker } from '../../components/common';
 import { teacherAPI, teacherAttendanceAPI } from '../../services/api';
+import { todayBSDate } from '../../utils/nepaliDate';
 
 const STATUS_OPTIONS = ['Present', 'Absent', 'Leave'];
 
@@ -27,7 +28,7 @@ export default function TeacherAttendanceDevice() {
   const [teachers, setTeachers] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState('');
   const [deviceName, setDeviceName] = useState('Main Office');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(todayBSDate());
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
@@ -126,13 +127,11 @@ export default function TeacherAttendanceDevice() {
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
-            <TextField
-              fullWidth
-              label="Date"
-              type="date"
+            <BSDatePicker
+              label="Date (BS)"
+              name="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              InputLabelProps={{ shrink: true }}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>

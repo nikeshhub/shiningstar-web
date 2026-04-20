@@ -17,6 +17,7 @@ import {
   Sms as SmsIcon,
 } from '@mui/icons-material';
 import {
+  BSDatePicker,
   Button,
   FormAutocompleteSelect,
   Input,
@@ -28,6 +29,11 @@ import {
   notificationAPI,
   studentAPI,
 } from '../../services/api';
+import {
+  adToBSDateTimeParts,
+  combineBSDateTime,
+  formatBSDate,
+} from '../../utils/nepaliDate';
 
 const TARGET_AUDIENCE_OPTIONS = [
   'All Parents',
@@ -36,31 +42,12 @@ const TARGET_AUDIENCE_OPTIONS = [
   'Individual',
 ];
 
-const toDateTimeLocal = (value) => {
-  if (!value) {
-    return '';
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-
-  const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-  return offsetDate.toISOString().slice(0, 16);
-};
-
-const formatSchedulePreview = (value) => {
-  if (!value) {
+const formatSchedulePreview = (dateValue, timeValue) => {
+  if (!dateValue || !timeValue) {
     return 'Draft. Send it manually from the notifications list.';
   }
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return 'Scheduled date is invalid.';
-  }
-
-  return `Scheduled for ${date.toLocaleString()}`;
+  return `Scheduled for ${formatBSDate(dateValue)} at ${timeValue}`;
 };
 
 const getSelectedLabels = (options, values) => {
@@ -78,6 +65,7 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
     classes: [],
     recipients: [],
     scheduledDate: '',
+    scheduledTime: '',
   });
   const [classOptions, setClassOptions] = useState([]);
   const [studentOptions, setStudentOptions] = useState([]);
@@ -140,12 +128,15 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
       return;
     }
 
+    const schedule = adToBSDateTimeParts(notificationData.scheduledDate);
+
     setFormData({
       message: notificationData.message || '',
       targetAudience: notificationData.targetAudience || 'All Parents',
       classes: (notificationData.classes || []).map((item) => item._id || item),
       recipients: (notificationData.recipients || []).map((item) => item._id || item),
-      scheduledDate: toDateTimeLocal(notificationData.scheduledDate),
+      scheduledDate: schedule.date,
+      scheduledTime: schedule.time,
     });
   }, [notificationData]);
 
@@ -208,6 +199,10 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
       return 'Select exactly one student for an individual notification';
     }
 
+    if ((formData.scheduledDate && !formData.scheduledTime) || (!formData.scheduledDate && formData.scheduledTime)) {
+      return 'Provide both the scheduled BS date and time';
+    }
+
     return null;
   };
 
@@ -222,6 +217,7 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
 
     try {
       setLoading(true);
+      const scheduledDateTime = combineBSDateTime(formData.scheduledDate, formData.scheduledTime);
 
       const payload = {
         message: formData.message.trim(),
@@ -233,7 +229,7 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
         sendSMS: true,
         sendEmail: false,
         sendPushNotification: false,
-        scheduledDate: formData.scheduledDate || undefined,
+        scheduledDate: scheduledDateTime || undefined,
       };
 
       if (notificationData?._id) {
@@ -425,18 +421,29 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
 
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Input
-                  label="Scheduled Date"
+                <BSDatePicker
+                  label="Scheduled Date (BS)"
                   name="scheduledDate"
-                  type="datetime-local"
                   value={formData.scheduledDate}
                   onChange={handleFieldChange}
                   disabled={isLocked || loading}
-                  helperText="Optional. The server will automatically send scheduled notifications."
+                  helperText="Optional. Pick the BS date for automatic sending."
                 />
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6 }}>
+                <Input
+                  label="Scheduled Time"
+                  name="scheduledTime"
+                  type="time"
+                  value={formData.scheduledTime}
+                  onChange={handleFieldChange}
+                  disabled={isLocked || loading}
+                  helperText="Use local Nepal time on the backend scheduler."
+                />
+              </Grid>
+
+              <Grid size={12}>
                 <Box
                   sx={{
                     height: '100%',
@@ -490,7 +497,11 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
 
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
                 <Chip label={formData.targetAudience} size="small" color="info" />
-                <Chip label={formData.scheduledDate ? 'Scheduled' : 'Draft'} size="small" color={formData.scheduledDate ? 'warning' : 'default'} />
+                <Chip
+                  label={formData.scheduledDate && formData.scheduledTime ? 'Scheduled' : 'Draft'}
+                  size="small"
+                  color={formData.scheduledDate && formData.scheduledTime ? 'warning' : 'default'}
+                />
                 <Chip label="SMS" size="small" color="primary" />
               </Box>
 
@@ -508,7 +519,7 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
               )}
 
               <Typography variant="body2" color="text.secondary">
-                {formatSchedulePreview(formData.scheduledDate)}
+                {formatSchedulePreview(formData.scheduledDate, formData.scheduledTime)}
               </Typography>
             </Box>
           </CardContent>

@@ -12,17 +12,21 @@ import {
   Info as InfoIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { Table, Button, Dialog, Toast, StatusChip } from '../../components/common';
+import { Table, Button, Dialog, Toast } from '../../components/common';
 import { classAPI } from '../../services/api';
 import { PageHeader, StatusBadge } from '../../components/dashboard';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ClassList() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [classToDelete, setClassToDelete] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
+  const canManageClasses = user?.role === 'Admin';
+  const showFinancialColumns = user?.role === 'Admin';
 
   useEffect(() => {
     loadClasses();
@@ -103,7 +107,7 @@ export default function ClassList() {
         </Box>
       ),
     },
-    {
+    ...(showFinancialColumns ? [{
       field: 'monthlyFee',
       headerName: 'Monthly Fee',
       width: 130,
@@ -112,7 +116,7 @@ export default function ClassList() {
           Rs. {row.monthlyFee || 0}
         </Typography>
       ),
-    },
+    }] : []),
     {
       field: 'status',
       headerName: 'Status',
@@ -138,25 +142,29 @@ export default function ClassList() {
           >
             <InfoIcon fontSize="small" />
           </IconButton>
-          <IconButton
-            size="small"
-            color="info"
-            onClick={() => handleEdit(row)}
-            title="Edit"
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={() => {
-              setClassToDelete(row);
-              setDeleteDialog(true);
-            }}
-            title="Delete"
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+          {canManageClasses && (
+            <IconButton
+              size="small"
+              color="info"
+              onClick={() => handleEdit(row)}
+              title="Edit"
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+          {canManageClasses && (
+            <IconButton
+              size="small"
+              color="error"
+              onClick={() => {
+                setClassToDelete(row);
+                setDeleteDialog(true);
+              }}
+              title="Delete"
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          )}
         </Box>
       ),
     },
@@ -166,11 +174,11 @@ export default function ClassList() {
     <Box>
       <PageHeader
         title="<em>Classes</em> Management (कक्षा व्यवस्थापन)"
-        action={
+        action={canManageClasses ? (
           <Button startIcon={<AddIcon />} onClick={handleAdd}>
             Add New Class
           </Button>
-        }
+        ) : null}
       />
 
       <Table

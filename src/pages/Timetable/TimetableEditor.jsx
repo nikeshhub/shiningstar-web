@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { Button, Select, Toast } from '../../components/common';
 import { classAPI, subjectAPI, teacherAPI, timetableAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const PERIODS = [1, 2, 3, 4, 5, 6, 7];
 
@@ -54,12 +55,14 @@ const formatTime = (mins) => {
 };
 
 export default function TimetableEditor() {
+  const { user } = useAuth();
   const [classes, setClasses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [grid, setGrid] = useState({});
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
+  const canEditTimetable = user?.role === 'Admin';
 
   const periodTimes = useMemo(() => getPeriodTimes(), []);
   useEffect(() => {
@@ -67,14 +70,16 @@ export default function TimetableEditor() {
       .then((res) => { if (res.data.success) setClasses(res.data.data); })
       .catch((err) => console.error('Error loading classes:', err));
 
-    subjectAPI.getAll()
-      .then((res) => { if (res.data.success) setSubjects(res.data.data); })
-      .catch((err) => console.error('Error loading subjects:', err));
+    if (canEditTimetable) {
+      subjectAPI.getAll()
+        .then((res) => { if (res.data.success) setSubjects(res.data.data); })
+        .catch((err) => console.error('Error loading subjects:', err));
 
-    teacherAPI.getAll({ status: 'Active' })
-      .then((res) => { if (res.data.success) setTeachers(res.data.data); })
-      .catch((err) => console.error('Error loading teachers:', err));
-  }, []);
+      teacherAPI.getAll({ status: 'Active' })
+        .then((res) => { if (res.data.success) setTeachers(res.data.data); })
+        .catch((err) => console.error('Error loading teachers:', err));
+    }
+  }, [canEditTimetable]);
 
   useEffect(() => {
     setLoading(true);
@@ -94,7 +99,9 @@ export default function TimetableEditor() {
             if (!nextGrid[classId]) return;
             nextGrid[classId][slot.period] = {
               subjects: (slot.subjects || []).map((subject) => subject?._id || subject || ''),
+              subjectLabels: (slot.subjects || []).map((subject) => subject?.subjectName || subject?.subjectCode || subject || 'Subject'),
               teacher: slot.teacher?._id || slot.teacher || '',
+              teacherName: slot.teacher?.name || '',
             };
           });
           setGrid(nextGrid);
@@ -118,6 +125,10 @@ export default function TimetableEditor() {
   };
 
   const handleSave = async () => {
+    if (!canEditTimetable) {
+      return;
+    }
+
     const slots = [];
     const teacherUsage = {};
     const subjectUsage = {};
@@ -205,11 +216,13 @@ export default function TimetableEditor() {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-          Timetable
+          {canEditTimetable ? 'Timetable' : 'My Timetable'}
         </Typography>
-        <Button onClick={handleSave} loading={loading}>
-          Save Timetable
-        </Button>
+        {canEditTimetable && (
+          <Button onClick={handleSave} loading={loading}>
+            Save Timetable
+          </Button>
+        )}
       </Box>
 
       <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
@@ -239,46 +252,64 @@ export default function TimetableEditor() {
                   <TableCell key={period}>
                     <Grid container spacing={1}>
                       <Grid size={12}>
-                        <TextField
-                          select
-                          fullWidth
-                          label="Subjects"
-                          value={grid[cls._id]?.[period]?.subjects || []}
-                          onChange={(e) => handleCellChange(cls._id, period, 'subjects', e.target.value)}
-                          InputLabelProps={{ shrink: true }}
-                          SelectProps={{
-                            multiple: true,
-                            displayEmpty: true,
-                            renderValue: (selected) => (
-                              (selected?.length || 0) === 0 ? (
-                                <span style={{ color: '#9e9e9e' }}>Select subjects</span>
-                              ) : (
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                {selected.map((val) => {
-                                  const opt = subjectOptions.find(o => o.value === val);
-                                  return <Chip key={val} label={opt?.label || val} size="small" />;
-                                })}
-                              </Box>
-                              )
-                            ),
-                          }}
-                          size="small"
-                        >
-                          {(classSubjectOptions[cls._id] || subjectOptions).map((opt) => (
-                            <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                          ))}
-                        </TextField>
+                        {canEditTimetable ? (
+                          <TextField
+                            select
+                            fullWidth
+                            label="Subjects"
+                            value={grid[cls._id]?.[period]?.subjects || []}
+                            onChange={(e) => handleCellChange(cls._id, period, 'subjects', e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                            SelectProps={{
+                              multiple: true,
+                              displayEmpty: true,
+                              renderValue: (selected) => (
+                                (selected?.length || 0) === 0 ? (
+                                  <span style={{ color: '#9e9e9e' }}>Select subjects</span>
+                                ) : (
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                  {selected.map((val) => {
+                                    const opt = subjectOptions.find(o => o.value === val);
+                                    return <Chip key={val} label={opt?.label || val} size="small" />;
+                                  })}
+                                </Box>
+                                )
+                              ),
+                            }}
+                            size="small"
+                          >
+                            {(classSubjectOptions[cls._id] || subjectOptions).map((opt) => (
+                              <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                            ))}
+                          </TextField>
+                        ) : (
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, minHeight: 32, alignItems: 'center' }}>
+                            {(grid[cls._id]?.[period]?.subjectLabels || []).length > 0 ? (
+                              grid[cls._id][period].subjectLabels.map((label, index) => (
+                                <Chip key={`${label}-${index}`} label={label} size="small" />
+                              ))
+                            ) : (
+                              <Typography variant="caption" color="text.disabled">Free period</Typography>
+                            )}
+                          </Box>
+                        )}
                       </Grid>
                       <Grid size={12}>
-                        <Select
-                          label="Teacher"
-                          name={`teacher-${cls._id}-${period}`}
-                          value={grid[cls._id]?.[period]?.teacher || ''}
-                          onChange={(e) => handleCellChange(cls._id, period, 'teacher', e.target.value)}
-                          options={teacherOptions}
-                          placeholder="Select Teacher"
-                          size="small"
-                        />
+                        {canEditTimetable ? (
+                          <Select
+                            label="Teacher"
+                            name={`teacher-${cls._id}-${period}`}
+                            value={grid[cls._id]?.[period]?.teacher || ''}
+                            onChange={(e) => handleCellChange(cls._id, period, 'teacher', e.target.value)}
+                            options={teacherOptions}
+                            placeholder="Select Teacher"
+                            size="small"
+                          />
+                        ) : (
+                          <Typography variant="caption" color="text.secondary">
+                            {grid[cls._id]?.[period]?.teacherName || '—'}
+                          </Typography>
+                        )}
                       </Grid>
                     </Grid>
                   </TableCell>

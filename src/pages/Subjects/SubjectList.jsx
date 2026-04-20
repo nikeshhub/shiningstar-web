@@ -13,14 +13,17 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Dialog, Toast } from '../../components/common';
 import { subjectAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function SubjectList() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [subjectToDelete, setSubjectToDelete] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
+  const canManageSubjects = user?.role === 'Admin';
 
   useEffect(() => {
     loadSubjects();
@@ -172,7 +175,7 @@ export default function SubjectList() {
         />
       ),
     },
-    {
+    ...(canManageSubjects ? [{
       field: 'actions',
       headerName: 'Actions',
       width: 120,
@@ -199,7 +202,7 @@ export default function SubjectList() {
           </IconButton>
         </Box>
       ),
-    },
+    }] : []),
   ];
 
   return (
@@ -208,9 +211,11 @@ export default function SubjectList() {
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
           Subjects Management (विषय व्यवस्थापन)
         </Typography>
-        <Button startIcon={<AddIcon />} onClick={handleAdd}>
-          Add New Subject
-        </Button>
+        {canManageSubjects && (
+          <Button startIcon={<AddIcon />} onClick={handleAdd}>
+            Add New Subject
+          </Button>
+        )}
       </Box>
 
       <Table

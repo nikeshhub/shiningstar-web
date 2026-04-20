@@ -12,10 +12,11 @@ import {
 } from '@mui/icons-material';
 import { studentAPI, feeAPI, classAPI } from '../services/api';
 import { StatCard, DashboardCard, PageHeader } from '../components/dashboard';
+import { useAuth } from '../context/AuthContext';
 
 export default function DashboardHome() {
+  const { user } = useAuth();
   const [stats, setStats] = useState({
-    totalStudents: 0,
     activeStudents: 0,
     totalClasses: 0,
     totalDues: 0,
@@ -23,20 +24,25 @@ export default function DashboardHome() {
 
   useEffect(() => {
     loadStats();
-  }, []);
+  }, [user?.role]);
 
   const loadStats = async () => {
     try {
-      const [studentsRes, classesRes, duesRes] = await Promise.all([
+      const [studentsRes, classesRes] = await Promise.all([
         studentAPI.getAll({ status: 'Active' }),
         classAPI.getAll({ status: 'Active' }),
-        feeAPI.getDuesList({ minAmount: 0 }),
       ]);
+
+      let totalDues = 0;
+      if (user?.role === 'Admin') {
+        const duesRes = await feeAPI.getDuesList({ minAmount: 0 });
+        totalDues = duesRes.data.data?.totalDues || 0;
+      }
 
       setStats({
         activeStudents: studentsRes.data.data?.length || 0,
         totalClasses: classesRes.data.data?.length || 0,
-        totalDues: duesRes.data.data?.totalDues || 0,
+        totalDues,
       });
     } catch (error) {
       console.error('Error loading stats:', error);
@@ -45,13 +51,13 @@ export default function DashboardHome() {
 
   return (
     <Box>
-      <PageHeader title="Dashboard <em>Overview</em>" />
+      <PageHeader title={user?.role === 'Teacher' ? 'Teacher <em>Dashboard</em>' : 'Dashboard <em>Overview</em>'} />
 
       <Grid container spacing={2.5}>
         {/* Stats Cards */}
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
-            label="Active Students"
+            label={user?.role === 'Teacher' ? 'My Active Students' : 'Active Students'}
             value={stats.activeStudents}
             icon={<PeopleIcon sx={{ fontSize: 20 }} />}
             iconBg="primary.light"
@@ -61,7 +67,7 @@ export default function DashboardHome() {
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
-            label="Total Classes"
+            label={user?.role === 'Teacher' ? 'My Classes' : 'Total Classes'}
             value={stats.totalClasses}
             icon={<SchoolIcon sx={{ fontSize: 20 }} />}
             iconBg="#EEF3FF"
@@ -71,12 +77,12 @@ export default function DashboardHome() {
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
-            label="Total Fee Dues"
-            value={`Rs. ${stats.totalDues.toLocaleString()}`}
+            label={user?.role === 'Teacher' ? 'Academic Scope' : 'Total Fee Dues'}
+            value={user?.role === 'Teacher' ? 'Class-scoped' : `Rs. ${stats.totalDues.toLocaleString()}`}
             icon={<PaymentIcon sx={{ fontSize: 20 }} />}
-            iconBg="error.light"
-            iconColor="error.main"
-            emoji="💰"
+            iconBg={user?.role === 'Teacher' ? 'primary.light' : 'error.light'}
+            iconColor={user?.role === 'Teacher' ? 'primary.main' : 'error.main'}
+            emoji={user?.role === 'Teacher' ? '✓' : '💰'}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
@@ -105,7 +111,9 @@ export default function DashboardHome() {
                 lineHeight: 1.6,
               }}
             >
-              आउनुभयो! यस प्रणालीमा तपाईं विद्यालयको सम्पूर्ण व्यवस्थापन गर्न सक्नुहुनेछ।
+              {user?.role === 'Teacher'
+                ? 'आउनुभयो! तपाईं आफ्नो class teacher class, attendance, marks, timetable, and progress reports manage गर्न सक्नुहुनेछ।'
+                : 'आउनुभयो! यस प्रणालीमा तपाईं विद्यालयको सम्पूर्ण व्यवस्थापन गर्न सक्नुहुनेछ।'}
             </Typography>
 
             <Box
@@ -155,7 +163,9 @@ export default function DashboardHome() {
                   }}
                 />
                 <Typography sx={{ fontSize: '13px', color: 'text.secondary' }}>
-                  शुल्क व्यवस्थापन (बही खाता जस्तै - बाँकी र अग्रिम ट्र्याकिंग)
+                  {user?.role === 'Teacher'
+                    ? 'विद्यार्थी सूची तपाईंको class teacher class मा मात्र सीमित छ'
+                    : 'शुल्क व्यवस्थापन (बही खाता जस्तै - बाँकी र अग्रिम ट्र्याकिंग)'}
                 </Typography>
               </Box>
 
@@ -199,7 +209,9 @@ export default function DashboardHome() {
                   }}
                 />
                 <Typography sx={{ fontSize: '13px', color: 'text.secondary' }}>
-                  सामग्री वितरण र सूचना प्रसारण
+                  {user?.role === 'Teacher'
+                    ? 'Fees, families, inventory, notifications, and teacher attendance admin-only छन्'
+                    : 'सामग्री वितरण र सूचना प्रसारण'}
                 </Typography>
               </Box>
             </Box>
