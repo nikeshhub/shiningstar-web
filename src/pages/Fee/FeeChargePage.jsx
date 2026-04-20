@@ -8,23 +8,18 @@ import {
   Alert,
   Chip,
 } from '@mui/material';
-import { ArrowBack as ArrowBackIcon, People as PeopleIcon, Person as PersonIcon } from '@mui/icons-material';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { ArrowBack as ArrowBackIcon, People as PeopleIcon } from '@mui/icons-material';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components/common';
-import { feeAPI, studentAPI, familyAPI } from '../../services/api';
+import { feeAPI, familyAPI } from '../../services/api';
 
 export default function FeeChargePage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { studentId, id } = useParams(); // studentId for individual, id for family
+  const { id: familyId } = useParams();
 
-  // Detect mode based on URL pattern
-  const isFamilyMode = location.pathname.includes('/families/');
-  const entityId = isFamilyMode ? id : studentId;
-
-  const [student, setStudent] = useState(null);
   const [family, setFamily] = useState(null);
   const [billNumber, setBillNumber] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
   const [chargeForm, setChargeForm] = useState({
@@ -34,65 +29,51 @@ export default function FeeChargePage() {
   });
 
   useEffect(() => {
-    if (!entityId) return;
+    if (!familyId) return;
 
-    // Load entity data (student or family)
-    if (isFamilyMode) {
-      familyAPI.getById(entityId)
-        .then((res) => {
-          if (res.data.success) setFamily(res.data.data);
-        })
-        .catch((err) => console.error('Error loading family:', err));
-    } else {
-      studentAPI.getById(entityId)
-        .then((res) => {
-          if (res.data.success) setStudent(res.data.data);
-        })
-        .catch((err) => console.error('Error loading student:', err));
-    }
+    familyAPI.getById(familyId)
+      .then((res) => {
+        if (res.data.success) setFamily(res.data.data);
+      })
+      .catch((err) => console.error('Error loading family:', err));
 
-    // Generate bill number
     feeAPI.generateBillNumber()
       .then((res) => {
         if (res.data.success) setBillNumber(res.data.data.billNumber);
       })
       .catch((err) => console.error('Error generating bill number:', err));
-  }, [entityId, isFamilyMode]);
+  }, [familyId]);
 
   const handleAddCharge = async () => {
+    if (!chargeForm.description || !chargeForm.chargeAmount) {
+      setSnackbar({ open: true, message: 'Description and amount are required', severity: 'error' });
+      return;
+    }
+
     try {
-      if (isFamilyMode) {
-        await familyAPI.createCharge({
-          familyId: entityId,
-          ...chargeForm,
-          billNumber,
-          chargeAmount: parseFloat(chargeForm.chargeAmount),
-        });
-      } else {
-        await feeAPI.createCharge({
-          studentId: entityId,
-          ...chargeForm,
-          billNumber,
-          chargeAmount: parseFloat(chargeForm.chargeAmount),
-        });
-      }
+      setSubmitting(true);
+      await feeAPI.createCharge({
+        familyId,
+        ...chargeForm,
+        billNumber,
+        chargeAmount: parseFloat(chargeForm.chargeAmount),
+      });
 
       setSnackbar({ open: true, message: 'Charge added successfully!', severity: 'success' });
-
-      // Navigate back to appropriate page
-      const backUrl = isFamilyMode
-        ? `/dashboard/families/${entityId}`
-        : `/dashboard/fee/ledger/${entityId}`;
-      setTimeout(() => navigate(backUrl), 800);
+      setTimeout(() => navigate(`/dashboard/families/${familyId}`), 800);
     } catch (error) {
       console.error('Error adding charge:', error);
-      setSnackbar({ open: true, message: 'Error adding charge', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Error adding charge',
+        severity: 'error',
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const backUrl = isFamilyMode
-    ? `/dashboard/families/${entityId}`
-    : `/dashboard/fee/ledger/${entityId}`;
+  const backUrl = `/dashboard/families/${familyId}`;
 
   return (
     <Box>
@@ -106,24 +87,15 @@ export default function FeeChargePage() {
           Back
         </Button>
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-          Add Charge {isFamilyMode && '(Family Billing)'}
+          Add Family Charge
         </Typography>
       </Box>
 
-      {isFamilyMode && family && (
+      {family && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Chip icon={<PeopleIcon />} label="Family Billing" color="primary" size="small" />
           <Typography variant="body2" color="text.secondary">
-            Family: {family.familyId} - {family.primaryContact.name} ({family.students?.length || 0} students)
-          </Typography>
-        </Box>
-      )}
-
-      {!isFamilyMode && student && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <Chip icon={<PersonIcon />} label="Individual Billing" color="default" size="small" />
-          <Typography variant="body2" color="text.secondary">
-            Student: {student.name} ({student.studentId})
+            Family: {family.familyId} - {family.primaryContact?.name} ({family.students?.length || 0} students)
           </Typography>
         </Box>
       )}
@@ -154,10 +126,10 @@ export default function FeeChargePage() {
         />
 
         <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-          <Button variant="outlined" onClick={() => navigate(backUrl)}>
+          <Button variant="outlined" onClick={() => navigate(backUrl)} disabled={submitting}>
             Cancel
           </Button>
-          <Button variant="contained" color="error" onClick={handleAddCharge}>
+          <Button variant="contained" color="error" onClick={handleAddCharge} loading={submitting}>
             Add Charge
           </Button>
         </Box>

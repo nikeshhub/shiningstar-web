@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Button,
   Typography,
   Card,
@@ -26,21 +19,33 @@ import {
   Add as AddIcon,
   Payment as PaymentIcon,
   People as PeopleIcon,
-  Receipt as ReceiptIcon,
   Link as LinkIcon,
   LinkOff as UnlinkIcon,
+  AccountBalance as LedgerIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { familyAPI } from '../../services/api';
+import { familyAPI, feeAPI } from '../../services/api';
 import { Toast, Dialog } from '../../components/common';
 import LinkStudentDialog from './LinkStudentDialog';
 
+/**
+ * FamilyDetail — at-a-glance summary of a family.
+ *
+ * This page intentionally keeps a light footprint:
+ *  · Primary contact info
+ *  · Current outstanding balance (denormalised mirror)
+ *  · Linked students
+ *  · Quick actions: add charge, add payment, open ledger
+ *
+ * The full fee ledger (transaction history, filters, statement PDF) lives
+ * on its own route at /dashboard/families/:id/ledger — opened by the
+ * "View Fee Ledger" button below.
+ */
 export default function FamilyDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [family, setFamily] = useState(null);
   const [students, setStudents] = useState([]);
-  const [transactions, setTransactions] = useState([]);
   const [currentBalance, setCurrentBalance] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
@@ -49,7 +54,7 @@ export default function FamilyDetail() {
   useEffect(() => {
     if (id) {
       loadFamilyData();
-      loadFamilyLedger();
+      loadCurrentBalance();
     }
   }, [id]);
 
@@ -66,21 +71,22 @@ export default function FamilyDetail() {
     }
   };
 
-  const loadFamilyLedger = async () => {
+  // We only need the running balance here, not the full transaction list.
+  // Reusing the ledger endpoint for this is cheap enough and keeps the
+  // balance computation in one place (server side).
+  const loadCurrentBalance = async () => {
     try {
-      const response = await familyAPI.getLedger(id);
+      const response = await feeAPI.getLedger(id);
       if (response.data.success) {
-        setTransactions(response.data.data.transactions || []);
         setCurrentBalance(response.data.data.currentBalance);
       }
     } catch (error) {
-      console.error('Error loading family ledger:', error);
+      console.error('Error loading family balance:', error);
     }
   };
 
   const handleLinkStudents = async (studentIds) => {
     try {
-      // Link each selected student to the family
       for (const studentId of studentIds) {
         await familyAPI.linkStudent({ familyId: id, studentId });
       }
@@ -89,7 +95,7 @@ export default function FamilyDetail() {
         message: `${studentIds.length} student(s) linked successfully`,
         severity: 'success',
       });
-      loadFamilyData(); // Reload to show updated student list
+      loadFamilyData();
     } catch (error) {
       console.error('Error linking students:', error);
       setToast({
@@ -113,7 +119,7 @@ export default function FamilyDetail() {
         message: 'Student unlinked successfully',
         severity: 'success',
       });
-      loadFamilyData(); // Reload to show updated student list
+      loadFamilyData();
     } catch (error) {
       console.error('Error unlinking student:', error);
       setUnlinkDialog({ open: false, studentId: null, studentName: '' });
@@ -127,10 +133,6 @@ export default function FamilyDetail() {
 
   const closeUnlinkDialog = () => {
     setUnlinkDialog({ open: false, studentId: null, studentName: '' });
-  };
-
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-GB');
   };
 
   if (!family) {
@@ -160,7 +162,6 @@ export default function FamilyDetail() {
       <Card sx={{ mb: 3, boxShadow: 2, borderRadius: 2 }}>
         <CardContent sx={{ p: 4 }}>
           <Grid container spacing={3}>
-            {/* Primary Contact */}
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
                 Primary Contact
@@ -181,14 +182,9 @@ export default function FamilyDetail() {
               )}
             </Grid>
 
-            {/* Family Info & Balance */}
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 <strong>Address:</strong> {family.address}
-              </Typography>
-              <Typography variant="body1" sx={{ mb: 1 }}>
-                <strong>Billing Type:</strong>{' '}
-                <Chip label={family.billingType} size="small" color="primary" />
               </Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 <strong>Status:</strong>{' '}
@@ -298,99 +294,33 @@ export default function FamilyDetail() {
         </CardContent>
       </Card>
 
-      {/* Action Buttons (Only if billing type is Family) */}
-      {family.billingType === 'Family' && (
-        <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate(`/dashboard/families/${id}/charge`)}
-            color="error"
-          >
-            Add Family Charge
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<PaymentIcon />}
-            onClick={() => navigate(`/dashboard/families/${id}/payment`)}
-            color="success"
-          >
-            Add Family Payment
-          </Button>
-          <Button variant="outlined" startIcon={<ReceiptIcon />}>
-            Print Statement
-          </Button>
-        </Stack>
-      )}
-
-      {/* Family Ledger Table */}
-      {family.billingType === 'Family' && (
-        <TableContainer component={Paper} sx={{ boxShadow: 2, borderRadius: 2 }}>
-          <Typography variant="h6" sx={{ p: 2, bgcolor: alpha('#1976d2', 0.05), fontWeight: 600 }}>
-            Family Fee Ledger (बही खाता)
-          </Typography>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                <TableCell>Date (मिति)</TableCell>
-                <TableCell>Description (विवरण)</TableCell>
-                <TableCell>Bill No</TableCell>
-                <TableCell align="right">Charge (रकम)</TableCell>
-                <TableCell align="right">Paid</TableCell>
-                <TableCell align="right">Due (बाँकी)</TableCell>
-                <TableCell align="right">Advance (अग्रिम)</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {transactions.map((txn) => (
-                <TableRow key={txn._id} hover>
-                  <TableCell>{formatDate(txn.date)}</TableCell>
-                  <TableCell>
-                    <Typography variant="body2">{txn.description}</Typography>
-                    {txn.feeBreakdown && txn.feeBreakdown.length > 0 && (
-                      <Typography variant="caption" color="text.secondary">
-                        {txn.feeBreakdown.map((fb) => `${fb.feeType}: ${fb.amount}`).join(', ')}
-                      </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell>{txn.billNumber || '-'}</TableCell>
-                  <TableCell align="right">
-                    {txn.chargeAmount > 0 && (
-                      <Typography color="error">{txn.chargeAmount}</Typography>
-                    )}
-                  </TableCell>
-                  <TableCell align="right">
-                    {txn.paidAmount > 0 && (
-                      <Typography color="success.main">{txn.paidAmount}</Typography>
-                    )}
-                  </TableCell>
-                  <TableCell align="right">
-                    {txn.totalDue > 0 && (
-                      <Typography color="error" fontWeight="bold">
-                        {txn.totalDue}
-                      </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell align="right">
-                    {txn.totalAdvance > 0 && (
-                      <Typography color="success.main" fontWeight="bold">
-                        {txn.totalAdvance}
-                      </Typography>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {transactions.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    <Typography color="text.secondary">No transactions yet</Typography>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+      {/* Action Buttons */}
+      <Stack direction="row" spacing={2} sx={{ mb: 2 }} flexWrap="wrap" useFlexGap>
+        <Button
+          variant="contained"
+          size="large"
+          startIcon={<LedgerIcon />}
+          onClick={() => navigate(`/dashboard/families/${id}/ledger`)}
+        >
+          View Fee Ledger
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<AddIcon />}
+          onClick={() => navigate(`/dashboard/families/${id}/charge`)}
+          color="error"
+        >
+          Add Family Charge
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<PaymentIcon />}
+          onClick={() => navigate(`/dashboard/families/${id}/payment`)}
+          color="success"
+        >
+          Add Family Payment
+        </Button>
+      </Stack>
 
       <LinkStudentDialog
         open={linkDialogOpen}

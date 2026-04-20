@@ -9,7 +9,6 @@ import {
   TextField,
   InputAdornment,
   Chip,
-  MenuItem,
   Alert,
   Snackbar,
 } from '@mui/material';
@@ -22,8 +21,9 @@ import {
   AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { feeAPI, classAPI } from '../../services/api';
+import { feeAPI } from '../../services/api';
 import { Table } from '../../components/common';
+import { todayBSDate } from '../../utils/nepaliDate';
 
 export default function FeeManagement() {
   const navigate = useNavigate();
@@ -31,12 +31,10 @@ export default function FeeManagement() {
     totalDues: 0,
     totalAdvance: 0,
     todayCollection: 0,
-    studentsWithDues: 0,
+    familiesWithDues: 0,
   });
   const [duesList, setDuesList] = useState([]);
-  const [classes, setClasses] = useState([]);
   const [filters, setFilters] = useState({
-    classId: '',
     minAmount: '',
     searchQuery: '',
   });
@@ -44,37 +42,24 @@ export default function FeeManagement() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
   useEffect(() => {
-    loadClasses();
     loadDuesList();
     loadCollectionSummary();
   }, []);
-
-  const loadClasses = async () => {
-    try {
-      const response = await classAPI.getAll();
-      if (response.data.success) {
-        setClasses(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error loading classes:', error);
-    }
-  };
 
   const loadDuesList = async () => {
     try {
       setLoading(true);
       const params = {};
-      if (filters.classId) params.classId = filters.classId;
       if (filters.minAmount) params.minAmount = filters.minAmount;
 
       const response = await feeAPI.getDuesList(params);
       if (response.data.success) {
-        const { students, totalDues, count } = response.data.data;
-        setDuesList(students);
+        const { families, totalDues, count } = response.data.data;
+        setDuesList(families || []);
         setStats((prev) => ({
           ...prev,
           totalDues,
-          studentsWithDues: count,
+          familiesWithDues: count,
         }));
       }
     } catch (error) {
@@ -86,11 +71,8 @@ export default function FeeManagement() {
 
   const loadCollectionSummary = async () => {
     try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
       const response = await feeAPI.getCollectionSummary({
-        startDate: today.toISOString(),
+        startDate: todayBSDate(),
       });
 
       if (response.data.success) {
@@ -112,45 +94,50 @@ export default function FeeManagement() {
     loadDuesList();
   };
 
-  const filteredDuesList = duesList.filter((student) => {
+  const filteredDuesList = duesList.filter((family) => {
     if (!filters.searchQuery) return true;
     const query = filters.searchQuery.toLowerCase();
     return (
-      student.name.toLowerCase().includes(query) ||
-      student.studentId.toLowerCase().includes(query)
+      family.familyId?.toLowerCase().includes(query) ||
+      family.primaryContact?.name?.toLowerCase().includes(query) ||
+      family.primaryContact?.mobile?.includes(query)
     );
   });
 
   const columns = [
     {
-      field: 'studentId',
-      headerName: 'Student ID',
+      field: 'familyId',
+      headerName: 'Family ID',
       width: 120,
     },
     {
-      field: 'name',
-      headerName: 'Student Name',
+      field: 'primaryContact',
+      headerName: 'Primary Contact',
       flex: 1,
+      renderCell: (row) => (
+        <Box>
+          <Typography variant="body2" fontWeight={600}>
+            {row.primaryContact?.name || '-'}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {row.primaryContact?.mobile || '-'}
+          </Typography>
+        </Box>
+      ),
     },
     {
-      field: 'currentClass',
-      headerName: 'Class',
-      width: 150,
-      renderCell: (row) => row.currentClass?.className || '-',
-    },
-    {
-      field: 'parentContact',
-      headerName: 'Contact',
-      width: 130,
-      renderCell: (row) => row.parentContact?.mobile || '-',
+      field: 'studentCount',
+      headerName: 'Students',
+      width: 100,
+      renderCell: (row) => row.studentCount ?? (row.students?.length ?? 0),
     },
     {
       field: 'totalDue',
       headerName: 'Amount Due',
-      width: 130,
+      width: 140,
       renderCell: (row) => (
         <Typography color="error" fontWeight="bold">
-          Rs. {row.feeBalance?.totalDue || 0}
+          Rs. {row.familyFeeBalance?.totalDue || 0}
         </Typography>
       ),
     },
@@ -163,7 +150,7 @@ export default function FeeManagement() {
           size="small"
           variant="outlined"
           startIcon={<ViewIcon />}
-          onClick={() => navigate(`/dashboard/fee/ledger/${row._id}`)}
+          onClick={() => navigate(`/dashboard/families/${row._id}`)}
         >
           View
         </Button>
@@ -179,7 +166,7 @@ export default function FeeManagement() {
           Fee Management
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Track fee collections, dues, and payments. Monthly fees are managed in Classes, exam fees in Exams.
+          Family-level fee collections, dues, and payments. All fees are billed and tracked per family.
         </Typography>
       </Box>
 
@@ -197,7 +184,7 @@ export default function FeeManagement() {
                     Rs. {stats.totalDues}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {stats.studentsWithDues} students
+                    {stats.familiesWithDues} families
                   </Typography>
                 </Box>
                 <TrendingDownIcon sx={{ fontSize: 50, color: '#ff9800', opacity: 0.3 }} />
@@ -277,23 +264,7 @@ export default function FeeManagement() {
             Filters
           </Typography>
           <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
-                fullWidth
-                select
-                label="Class"
-                value={filters.classId}
-                onChange={(e) => handleFilterChange('classId', e.target.value)}
-              >
-                <MenuItem value="">All Classes</MenuItem>
-                {classes.map((cls) => (
-                  <MenuItem key={cls._id} value={cls._id}>
-                    {cls.className}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="Minimum Due Amount"
@@ -303,13 +274,13 @@ export default function FeeManagement() {
                 placeholder="e.g., 1000"
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
-                label="Search Student"
+                label="Search Family"
                 value={filters.searchQuery}
                 onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
-                placeholder="Name or ID"
+                placeholder="Family ID, contact name, or mobile"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -333,10 +304,10 @@ export default function FeeManagement() {
         <CardContent>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Students with Dues (बक्यौता सूची)
+              Families with Dues (बक्यौता सूची)
             </Typography>
             <Chip
-              label={`${filteredDuesList.length} Students`}
+              label={`${filteredDuesList.length} Families`}
               color="error"
               variant="outlined"
             />
@@ -344,7 +315,7 @@ export default function FeeManagement() {
 
           {filteredDuesList.length === 0 && !loading ? (
             <Alert severity="success">
-              No students with pending dues! All clear.
+              No families with pending dues! All clear.
             </Alert>
           ) : (
             <Table

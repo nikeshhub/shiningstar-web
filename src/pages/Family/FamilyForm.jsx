@@ -19,7 +19,6 @@ import { Button, Toast, Select } from '../../components/common';
 import { familyAPI } from '../../services/api';
 
 const RELATION_OPTIONS = ['Father', 'Mother', 'Guardian'];
-const BILLING_TYPE_OPTIONS = ['Individual', 'Family'];
 const STATUS_OPTIONS = ['Active', 'Inactive'];
 
 export default function FamilyForm() {
@@ -44,7 +43,6 @@ export default function FamilyForm() {
       email: '',
     },
     address: '',
-    billingType: 'Family',
     remarks: '',
   });
 
@@ -159,9 +157,9 @@ export default function FamilyForm() {
                 Family Information
               </Typography>
             </Box>
-            <Grid container spacing={3}>
-              {isEdit && (
-                <Grid size={{ xs: 12, md: 4 }}>
+            {isEdit ? (
+              <Grid container spacing={3}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Family ID"
@@ -171,21 +169,7 @@ export default function FamilyForm() {
                     helperText="Auto-generated"
                   />
                 </Grid>
-              )}
-              <Grid size={{ xs: 12, md: isEdit ? 4 : 6 }}>
-                <Select
-                  label="Billing Type"
-                  name="billingType"
-                  value={formData.billingType}
-                  onChange={handleChange}
-                  options={BILLING_TYPE_OPTIONS}
-                  required
-                  allowNone={false}
-                  helperText="Family billing combines all students"
-                />
-              </Grid>
-              {isEdit && (
-                <Grid size={{ xs: 12, md: 4 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Select
                     label="Status"
                     name="status"
@@ -196,8 +180,12 @@ export default function FamilyForm() {
                     allowNone={false}
                   />
                 </Grid>
-              )}
-            </Grid>
+              </Grid>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                Family ID will be auto-generated on creation. Fees are billed at the family level and shared across all linked students.
+              </Typography>
+            )}
           </CardContent>
         </Card>
 
