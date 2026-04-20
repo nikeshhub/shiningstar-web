@@ -15,7 +15,7 @@ const PageHero = () => {
         <SectionLabel>Who We Are</SectionLabel>
         <h1>About <em>Shining Star</em></h1>
         <p className="page-hero__description">
-          Empowering young minds in Panchthar, Nepal with quality education since 1994
+          Empowering young minds in Panchthar, Nepal with quality education since 2051 BS
         </p>
       </div>
     </section>

@@ -11,6 +11,9 @@ import {
   Email as EmailIcon,
   ArrowUpward as ArrowUpIcon,
 } from '@mui/icons-material';
+import { getCurrentBSDateParts } from '../../utils/nepaliDate';
+
+const currentBSYear = getCurrentBSDateParts()?.year || '';
 
 export default function ModernFooter() {
   const quickLinks = [
@@ -266,7 +269,7 @@ export default function ModernFooter() {
           }}
         >
           <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-            © {new Date().getFullYear()} Shining Star English School. All rights reserved.
+            © {currentBSYear} Shining Star English School. All rights reserved.
           </Typography>
 
           <Box sx={{ display: 'flex', gap: 3 }}>
