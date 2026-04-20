@@ -24,15 +24,19 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Table, Button } from '../../components/common';
 import { examAPI } from '../../services/api';
+import { formatBSDate } from '../../utils/nepaliDate';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ExamList() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [examToDelete, setExamToDelete] = useState(null);
   const [tabValue, setTabValue] = useState(0);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+  const canManageExams = user?.role === 'Admin';
 
   useEffect(() => {
     loadExams();
@@ -105,45 +109,28 @@ export default function ExamList() {
     }
   };
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-GB');
-  };
+  // BS (Bikram Sambat) — the whole app runs on Nepali dates.
+  const formatDate = (date) => formatBSDate(date);
 
   const columns = [
     {
       field: 'examName',
       headerName: 'Exam Name',
-      width: 220,
+      width: 260,
       renderCell: (row) => (
         <Box>
           <Typography variant="body2" sx={{ fontWeight: 500 }}>
             {row.examName}
           </Typography>
-          {row.examType === 'Terminal' && row.terminalNumber && (
+          {row.terminalNumber && (
             <Chip
-              label={`T${row.terminalNumber}`}
+              label={`Terminal ${row.terminalNumber}`}
               size="small"
               color="warning"
               sx={{ mt: 0.5, height: 18, fontSize: '0.7rem' }}
             />
           )}
         </Box>
-      ),
-    },
-    {
-      field: 'examType',
-      headerName: 'Type',
-      width: 120,
-      renderCell: (row) => (
-        <Chip
-          label={row.examType}
-          size="small"
-          color={
-            row.examType === 'Final' ? 'error' :
-            row.examType === 'Terminal' ? 'warning' :
-            'primary'
-          }
-        />
       ),
     },
     {
@@ -216,14 +203,16 @@ export default function ExamList() {
           >
             <GradeIcon fontSize="small" />
           </IconButton>
-          <IconButton
-            size="small"
-            color="secondary"
-            onClick={() => handleGenerateNotice(row._id)}
-            title="Generate Notice PDF"
-          >
-            <PdfIcon fontSize="small" />
-          </IconButton>
+          {canManageExams && (
+            <IconButton
+              size="small"
+              color="secondary"
+              onClick={() => handleGenerateNotice(row._id)}
+              title="Generate Notice PDF"
+            >
+              <PdfIcon fontSize="small" />
+            </IconButton>
+          )}
           {row.noticeGenerated && (
             <IconButton
               size="small"
@@ -234,25 +223,29 @@ export default function ExamList() {
               <DownloadIcon fontSize="small" />
             </IconButton>
           )}
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={() => handleEdit(row)}
-            title="Edit"
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={() => {
-              setExamToDelete(row);
-              setDeleteDialog(true);
-            }}
-            title="Delete"
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+          {canManageExams && (
+            <IconButton
+              size="small"
+              color="primary"
+              onClick={() => handleEdit(row)}
+              title="Edit"
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+          {canManageExams && (
+            <IconButton
+              size="small"
+              color="error"
+              onClick={() => {
+                setExamToDelete(row);
+                setDeleteDialog(true);
+              }}
+              title="Delete"
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          )}
         </Box>
       ),
     },
@@ -267,9 +260,11 @@ export default function ExamList() {
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
           Exams & Marks (परीक्षा तथा नम्बर)
         </Typography>
-        <Button startIcon={<AddIcon />} onClick={handleAdd}>
-          Add New Exam
-        </Button>
+        {canManageExams && (
+          <Button startIcon={<AddIcon />} onClick={handleAdd}>
+            Add New Exam
+          </Button>
+        )}
       </Box>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
@@ -285,7 +280,7 @@ export default function ExamList() {
           columns={columns}
           rows={exams}
           loading={loading}
-          emptyMessage="No exams found. Click 'Add New Exam' to create one."
+          emptyMessage={canManageExams ? "No exams found. Click 'Add New Exam' to create one." : "No exams found for your class teacher class."}
           hover
         />
       )}

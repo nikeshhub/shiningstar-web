@@ -1,292 +1,424 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
+  Paper,
   Typography,
+  Grid,
   TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Chip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Divider,
   Alert,
 } from '@mui/material';
-import { Save as SaveIcon } from '@mui/icons-material';
-import { Table, Button } from '../../components/common';
-import { studentAPI, examAPI } from '../../services/api';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button, Toast } from '../../components/common';
+import { examAPI, classAPI, subjectAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
-export default function MarksEntry({ exam, onClose }) {
+const GPA_SCALE = {
+  'A+': { min: 90, gpa: 4.0, color: '#2e7d32' },
+  'A': { min: 80, gpa: 3.6, color: '#388e3c' },
+  'B+': { min: 70, gpa: 3.2, color: '#689f38' },
+  'B': { min: 60, gpa: 2.8, color: '#afb42b' },
+  'C+': { min: 50, gpa: 2.4, color: '#f57c00' },
+  'C': { min: 40, gpa: 2.0, color: '#ef6c00' },
+  'D': { min: 20, gpa: 1.6, color: '#d84315' },
+  'NG': { min: 0, gpa: 0.0, color: '#c62828' },
+};
+
+export default function MarksEntry() {
+  const navigate = useNavigate();
+  const { id: examId } = useParams();
+  const { user } = useAuth();
+  const isTeacher = user?.role === 'Teacher';
+
+  const [exam, setExam] = useState(null);
+  const [selectedClass, setSelectedClass] = useState('');
   const [students, setStudents] = useState([]);
-  const [marks, setMarks] = useState({});
+  const [subjects, setSubjects] = useState([]);
+  const [marksData, setMarksData] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
 
   useEffect(() => {
-    if (exam?.class) {
+    loadExam();
+  }, [examId, isTeacher]);
+
+  useEffect(() => {
+    if (selectedClass && exam) {
       loadStudents();
-      loadExistingMarks();
+      loadSubjects();
     }
-  }, [exam]);
+  }, [selectedClass, exam]);
 
-  const loadStudents = async () => {
+  const loadExam = async () => {
     try {
-      setLoading(true);
-      const response = await studentAPI.getAll({
-        class: exam.class._id || exam.class,
-        status: 'Active',
-      });
+      const response = await examAPI.getById(examId);
       if (response.data.success) {
-        setStudents(response.data.data);
+        const examData = response.data.data;
+        setExam(examData);
 
-        // Initialize marks
-        const initialMarks = {};
-        response.data.data.forEach((student) => {
-          initialMarks[student._id] = {
-            student: student._id,
-            marksObtained: '',
-            grade: '',
-            remarks: '',
-            isAbsent: false,
-          };
-        });
-        setMarks(initialMarks);
+        if (isTeacher) {
+          setSelectedClass(examData.classes?.[0]?._id || examData.classes?.[0] || '');
+        } else if (examData.classes?.length === 1) {
+          setSelectedClass(examData.classes[0]._id || examData.classes[0]);
+        }
       }
     } catch (error) {
-      console.error('Error loading students:', error);
+      console.error('Error loading exam:', error);
+      setToast({ open: true, message: 'Failed to load exam', severity: 'error' });
     } finally {
       setLoading(false);
     }
   };
 
-  const loadExistingMarks = async () => {
+  const loadStudents = async () => {
     try {
-      const response = await examAPI.getMarks(exam._id);
-      if (response.data.success && response.data.data?.students) {
-        const existingMarks = {};
-        response.data.data.students.forEach((record) => {
-          existingMarks[record.student._id || record.student] = {
-            student: record.student._id || record.student,
-            marksObtained: record.marksObtained,
-            grade: record.grade || '',
-            remarks: record.remarks || '',
-            isAbsent: record.isAbsent || false,
+      const response = await classAPI.getStudents(selectedClass);
+      if (response.data.success) {
+        const studentsList = response.data.data;
+        setStudents(studentsList);
+
+        // Initialize marks data for each student
+        const initialMarks = {};
+        studentsList.forEach((student) => {
+          initialMarks[student._id] = {
+            studentId: student._id,
+            subjectMarks: [],
           };
         });
-        setMarks(prev => ({ ...prev, ...existingMarks }));
+        setMarksData(initialMarks);
       }
     } catch (error) {
-      console.error('Error loading marks:', error);
+      console.error('Error loading students:', error);
     }
   };
 
-  const calculateGrade = (marksObtained, totalMarks) => {
-    const percentage = (marksObtained / totalMarks) * 100;
+  const loadSubjects = async () => {
+    try {
+      const response = await subjectAPI.getAll();
+      if (response.data.success) {
+        // Filter subjects applicable to this class (you may need class info to filter properly)
+        setSubjects(response.data.data);
 
+        // Initialize subject marks for each student
+        setMarksData(prev => {
+          const updated = { ...prev };
+          Object.keys(updated).forEach(studentId => {
+            updated[studentId].subjectMarks = response.data.data.map(subject => ({
+              subject: subject._id,
+              subjectName: subject.subjectName,
+              writtenMarks: '',
+              practicalMarks: '',
+              fullMarks: subject.fullMarks,
+              passMarks: subject.passMarks,
+              writtenMax: subject.writtenMarks,
+              practicalMax: subject.practicalMarks,
+              isAbsent: false,
+            }));
+          });
+          return updated;
+        });
+      }
+    } catch (error) {
+      console.error('Error loading subjects:', error);
+    }
+  };
+
+  const handleMarksChange = (studentId, subjectIndex, field, value) => {
+    setMarksData(prev => {
+      const updated = { ...prev };
+      if (!updated[studentId]) return prev;
+
+      updated[studentId].subjectMarks[subjectIndex][field] = value;
+
+      // Auto-calculate totals if written or practical changed
+      if (field === 'writtenMarks' || field === 'practicalMarks') {
+        const subject = updated[studentId].subjectMarks[subjectIndex];
+        const written = parseFloat(subject.writtenMarks) || 0;
+        const practical = parseFloat(subject.practicalMarks) || 0;
+        subject.totalMarks = written + practical;
+      }
+
+      return updated;
+    });
+  };
+
+  const calculateGrade = (percentage) => {
     if (percentage >= 90) return 'A+';
     if (percentage >= 80) return 'A';
     if (percentage >= 70) return 'B+';
     if (percentage >= 60) return 'B';
     if (percentage >= 50) return 'C+';
     if (percentage >= 40) return 'C';
-    if (percentage >= 30) return 'D';
-    return 'E';
+    if (percentage >= 20) return 'D';
+    return 'NG';
   };
 
-  const handleMarksChange = (studentId, value) => {
-    const marksObtained = parseFloat(value) || 0;
-    const grade = calculateGrade(marksObtained, exam.totalMarks);
-
-    setMarks({
-      ...marks,
-      [studentId]: {
-        ...marks[studentId],
-        marksObtained: value,
-        grade,
-      },
-    });
+  const getGradeInfo = (percentage) => {
+    const grade = calculateGrade(percentage);
+    return { grade, ...GPA_SCALE[grade] };
   };
 
-  const handleAbsentToggle = (studentId) => {
-    setMarks({
-      ...marks,
-      [studentId]: {
-        ...marks[studentId],
-        isAbsent: !marks[studentId].isAbsent,
-        marksObtained: !marks[studentId].isAbsent ? 0 : marks[studentId].marksObtained,
-        grade: !marks[studentId].isAbsent ? 'AB' : marks[studentId].grade,
-      },
-    });
-  };
+  const handleSaveMarks = async (studentId) => {
+    const studentData = marksData[studentId];
+    if (!studentData) return;
 
-  const handleRemarksChange = (studentId, value) => {
-    setMarks({
-      ...marks,
-      [studentId]: {
-        ...marks[studentId],
-        remarks: value,
-      },
-    });
-  };
+    // Client-side bounds check — backend re-validates against the Subject doc.
+    for (const sm of studentData.subjectMarks) {
+      const written = parseFloat(sm.writtenMarks) || 0;
+      const practical = parseFloat(sm.practicalMarks) || 0;
+      if (!sm.isAbsent && (written < 0 || practical < 0)) {
+        setToast({ open: true, message: `Marks cannot be negative for ${sm.subjectName}`, severity: 'error' });
+        return;
+      }
+    }
 
-  const handleSubmit = async () => {
     try {
       setSaving(true);
 
-      const marksData = {
-        examId: exam._id,
-        students: Object.values(marks),
+      const payload = {
+        examId,
+        studentId,
+        classId: selectedClass,
+        academicYear: exam.academicYear,
+        terminalNumber: exam.terminalNumber,
+        subjectMarks: studentData.subjectMarks.map(sm => ({
+          subject: sm.subject,
+          writtenMarks: parseFloat(sm.writtenMarks) || 0,
+          practicalMarks: parseFloat(sm.practicalMarks) || 0,
+          isAbsent: sm.isAbsent,
+        })),
       };
 
-      await examAPI.saveMarks(exam._id, marksData);
-      alert('Marks saved successfully!');
-      onClose();
+      const response = await examAPI.enterMarks(payload);
+
+      if (response.data.success) {
+        setToast({ open: true, message: 'Marks saved successfully!', severity: 'success' });
+      }
     } catch (error) {
       console.error('Error saving marks:', error);
-      alert('Error saving marks');
+      setToast({ open: true, message: error.response?.data?.message || 'Failed to save marks', severity: 'error' });
     } finally {
       setSaving(false);
     }
   };
 
-  const getGradeColor = (grade) => {
-    if (grade === 'A+' || grade === 'A') return 'success';
-    if (grade === 'B+' || grade === 'B') return 'primary';
-    if (grade === 'C+' || grade === 'C') return 'warning';
-    if (grade === 'AB') return 'default';
-    return 'error';
-  };
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+        <Typography>Loading...</Typography>
+      </Box>
+    );
+  }
 
-  const columns = [
-    {
-      field: 'rollNumber',
-      headerName: 'Roll No',
-      width: 80,
-      renderCell: (row) => row.rollNumber || '-',
-    },
-    {
-      field: 'name',
-      headerName: 'Student Name',
-      width: 200,
-      renderCell: (row) => (
-        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-          {row.name}
-        </Typography>
-      ),
-    },
-    {
-      field: 'studentId',
-      headerName: 'Student ID',
-      width: 120,
-    },
-    {
-      field: 'marks',
-      headerName: `Marks (out of ${exam?.totalMarks})`,
-      width: 150,
-      renderCell: (row) => (
-        <TextField
-          size="small"
-          type="number"
-          value={marks[row._id]?.marksObtained || ''}
-          onChange={(e) => handleMarksChange(row._id, e.target.value)}
-          disabled={marks[row._id]?.isAbsent}
-          inputProps={{ min: 0, max: exam?.totalMarks }}
-          sx={{ width: 100 }}
-        />
-      ),
-    },
-    {
-      field: 'grade',
-      headerName: 'Grade',
-      width: 80,
-      renderCell: (row) => (
-        <Chip
-          label={marks[row._id]?.grade || '-'}
-          size="small"
-          color={getGradeColor(marks[row._id]?.grade)}
-        />
-      ),
-    },
-    {
-      field: 'absent',
-      headerName: 'Absent',
-      width: 100,
-      renderCell: (row) => (
-        <Chip
-          label={marks[row._id]?.isAbsent ? 'Absent' : 'Present'}
-          size="small"
-          color={marks[row._id]?.isAbsent ? 'error' : 'success'}
-          onClick={() => handleAbsentToggle(row._id)}
-          sx={{ cursor: 'pointer' }}
-        />
-      ),
-    },
-    {
-      field: 'remarks',
-      headerName: 'Remarks',
-      width: 200,
-      renderCell: (row) => (
-        <TextField
-          size="small"
-          value={marks[row._id]?.remarks || ''}
-          onChange={(e) => handleRemarksChange(row._id, e.target.value)}
-          placeholder="Remarks..."
-          fullWidth
-        />
-      ),
-    },
-  ];
-
-  const stats = {
-    totalStudents: students.length,
-    present: Object.values(marks).filter(m => !m.isAbsent).length,
-    absent: Object.values(marks).filter(m => m.isAbsent).length,
-    passed: Object.values(marks).filter(m =>
-      !m.isAbsent && parseFloat(m.marksObtained) >= exam?.passingMarks
-    ).length,
-  };
+  if (!exam) {
+    return (
+      <Box>
+        <Alert severity="error">Exam not found</Alert>
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Alert severity="info" sx={{ mb: 2 }}>
-        <Typography variant="body2">
-          <strong>Exam:</strong> {exam?.examName} |
-          <strong> Class:</strong> {exam?.class?.className} |
-          <strong> Subject:</strong> {exam?.subject?.name || exam?.subject} |
-          <strong> Total Marks:</strong> {exam?.totalMarks} |
-          <strong> Passing Marks:</strong> {exam?.passingMarks}
-        </Typography>
-      </Alert>
-
-      <Box sx={{ display: 'flex', gap: 3, mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-        <Typography variant="body2">
-          <strong>Total Students:</strong> {stats.totalStudents}
-        </Typography>
-        <Typography variant="body2" color="success.main">
-          <strong>Present:</strong> {stats.present}
-        </Typography>
-        <Typography variant="body2" color="error.main">
-          <strong>Absent:</strong> {stats.absent}
-        </Typography>
-        <Typography variant="body2" color="primary.main">
-          <strong>Passed:</strong> {stats.passed}
-        </Typography>
-      </Box>
-
-      <Table
-        columns={columns}
-        rows={students}
-        loading={loading}
-        emptyMessage="No students found in this class."
-        hover
-      />
-
-      <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-        <Button variant="outlined" onClick={onClose}>
-          Cancel
-        </Button>
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+            Marks Entry - {exam.examName}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+            {exam.terminalNumber && <Chip label={`Terminal ${exam.terminalNumber}`} color="warning" size="small" />}
+            <Chip label={exam.academicYear} size="small" />
+          </Box>
+        </Box>
         <Button
-          startIcon={<SaveIcon />}
-          onClick={handleSubmit}
-          loading={saving}
+          variant="outlined"
+          onClick={() => navigate('/dashboard/exams')}
         >
-          Save Marks
+          Back to Exams
         </Button>
       </Box>
+
+      {/* Class Selection */}
+      {isTeacher ? (
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <Typography variant="caption" color="text.secondary">
+            My Class
+          </Typography>
+          <Typography sx={{ fontWeight: 600 }}>
+            {exam.classes?.[0]?.className || 'No class teacher assignment found for this exam'}
+          </Typography>
+        </Paper>
+      ) : exam.classes?.length > 1 && (
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <FormControl fullWidth>
+            <InputLabel>Select Class</InputLabel>
+            <Select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              label="Select Class"
+            >
+              {exam.classes.map((cls) => (
+                <MenuItem key={cls._id} value={cls._id}>
+                  {cls.className}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Paper>
+      )}
+
+      {/* NEB Grading Scale Reference */}
+      <Paper sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5' }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+          NEB Grading Scale:
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          {Object.entries(GPA_SCALE).map(([grade, info]) => (
+            <Chip
+              key={grade}
+              label={`${grade} = ${info.min}%+ (${info.gpa})`}
+              size="small"
+              sx={{ bgcolor: info.color, color: 'white' }}
+            />
+          ))}
+        </Box>
+      </Paper>
+
+      {/* Marks Entry for Each Student */}
+      {selectedClass && students.length > 0 ? (
+        <Grid container spacing={2}>
+          {students.map((student) => {
+            const studentMarks = marksData[student._id];
+            if (!studentMarks) return null;
+
+            return (
+              <Grid size={12} key={student._id}>
+                <Paper sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Box>
+                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                        {student.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Roll: {student.rollNumber} | ID: {student.studentId}
+                      </Typography>
+                    </Box>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleSaveMarks(student._id)}
+                      loading={saving}
+                    >
+                      Save Marks
+                    </Button>
+                  </Box>
+
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Subject</TableCell>
+                          <TableCell align="center">Written</TableCell>
+                          <TableCell align="center">Practical</TableCell>
+                          <TableCell align="center">Total</TableCell>
+                          <TableCell align="center">Full Marks</TableCell>
+                          <TableCell align="center">%</TableCell>
+                          <TableCell align="center">Grade</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {studentMarks.subjectMarks.map((subject, idx) => {
+                          const total = (parseFloat(subject.writtenMarks) || 0) + (parseFloat(subject.practicalMarks) || 0);
+                          const percentage = subject.fullMarks > 0 ? (total / subject.fullMarks) * 100 : 0;
+                          const gradeInfo = getGradeInfo(percentage);
+
+                          return (
+                            <TableRow key={idx}>
+                              <TableCell>
+                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                  {subject.subjectName}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="center">
+                                <TextField
+                                  size="small"
+                                  type="number"
+                                  value={subject.writtenMarks}
+                                  onChange={(e) => handleMarksChange(student._id, idx, 'writtenMarks', e.target.value)}
+                                  inputProps={{ min: 0, max: subject.writtenMax, style: { textAlign: 'center' } }}
+                                  sx={{ width: 80 }}
+                                  disabled={subject.isAbsent || !subject.writtenMax}
+                                  helperText={subject.writtenMax ? `/${subject.writtenMax}` : '—'}
+                                />
+                              </TableCell>
+                              <TableCell align="center">
+                                <TextField
+                                  size="small"
+                                  type="number"
+                                  value={subject.practicalMarks}
+                                  onChange={(e) => handleMarksChange(student._id, idx, 'practicalMarks', e.target.value)}
+                                  inputProps={{ min: 0, max: subject.practicalMax, style: { textAlign: 'center' } }}
+                                  sx={{ width: 80 }}
+                                  disabled={subject.isAbsent || !subject.practicalMax}
+                                  helperText={subject.practicalMax ? `/${subject.practicalMax}` : '—'}
+                                />
+                              </TableCell>
+                              <TableCell align="center">
+                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                  {total.toFixed(0)}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="center">
+                                <Typography variant="body2">
+                                  {subject.fullMarks}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="center">
+                                <Typography variant="body2">
+                                  {percentage.toFixed(1)}%
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="center">
+                                <Chip
+                                  label={`${gradeInfo.grade} (${gradeInfo.gpa})`}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: gradeInfo.color,
+                                    color: 'white',
+                                    fontWeight: 600,
+                                  }}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              </Grid>
+            );
+          })}
+        </Grid>
+      ) : (
+        <Alert severity="info">
+          {selectedClass ? 'No students found in this class' : 'Please select a class to enter marks'}
+        </Alert>
+      )}
+
+      <Toast toast={toast} onClose={() => setToast({ ...toast, open: false })} />
     </Box>
   );
 }
