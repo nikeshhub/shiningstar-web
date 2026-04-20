@@ -16,6 +16,9 @@ api.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -47,13 +50,12 @@ export const studentAPI = {
   updateGPS: (id, data) => api.put(`/students/${id}/gps`, data),
 };
 
-// Fee APIs
+// Fee APIs (family-level billing)
 export const feeAPI = {
-  createStructure: (data) => api.post('/fee/structure', data),
-  getStructure: (params) => api.get('/fee/structure', { params }),
   createCharge: (data) => api.post('/fee/charge', data),
   createPayment: (data) => api.post('/fee/payment', data),
-  getLedger: (studentId, params) => api.get(`/fee/ledger/${studentId}`, { params }),
+  getLedger: (familyId, params) => api.get(`/fee/ledger/${familyId}`, { params }),
+  getTransaction: (id) => api.get(`/fee/transaction/${id}`),
   getDuesList: (params) => api.get('/fee/dues', { params }),
   getCollectionSummary: (params) => api.get('/fee/collection-summary', { params }),
   generateBillNumber: () => api.get('/fee/generate-bill-number'),
@@ -88,11 +90,12 @@ export const examAPI = {
   create: (data) => api.post('/exams', data),
   update: (id, data) => api.put(`/exams/${id}`, data),
   delete: (id) => api.delete(`/exams/${id}`),
-  generateFees: (id) => api.post(`/exams/${id}/generate-fees`),
+  // Note: creating an exam auto-charges terminal fees (3 months tuition) per family.
   generateNotice: (id) => api.post(`/exams/${id}/notice/generate`),
   downloadNotice: (id) => api.get(`/exams/${id}/notice/download`, { responseType: 'blob' }),
   enterMarks: (data) => api.post('/exams/marks/enter', data),
   bulkEnterMarks: (data) => api.post('/exams/marks/bulk-enter', data),
+  deleteMarks: (id) => api.delete(`/exams/marks/${id}`),
   getMarksheet: (params) => api.get('/exams/marks/marksheet', { params }),
   getTerminalMarks: (params) => api.get('/exams/marks/terminal', { params }),
   getClassResult: (params) => api.get('/exams/marks/class-result', { params }),
@@ -140,6 +143,17 @@ export const notificationAPI = {
   sendAbsenceAlert: (data) => api.post('/notifications/alerts/absence', data),
 };
 
+// Auth / system control APIs
+export const authAPI = {
+  getSystemOverview: () => api.get('/auth/system-overview'),
+  getProvisionTargets: (params) => api.get('/auth/provision-targets', { params }),
+  provisionAccount: (data) => api.post('/auth/provision-account', data),
+  getUsers: (params) => api.get('/auth/users', { params }),
+  updatePermissions: (data) => api.put('/auth/users/permissions', data),
+  toggleUserStatus: (data) => api.put('/auth/users/toggle-status', data),
+  createUser: (data) => api.post('/auth/register', data),
+};
+
 // Timetable APIs
 export const timetableAPI = {
   getAll: (params) => api.get('/timetable', { params }),
@@ -164,7 +178,7 @@ export const progressReportAPI = {
   downloadPDF: (params) => api.get('/progress-reports/pdf/download', { params, responseType: 'blob' }),
 };
 
-// Family APIs (for sibling grouping and family billing)
+// Family APIs (families are the billing unit)
 export const familyAPI = {
   getAll: (params) => api.get('/families', { params }),
   getById: (id) => api.get(`/families/${id}`),
@@ -175,10 +189,12 @@ export const familyAPI = {
   linkStudent: (data) => api.post('/families/link-student', data),
   unlinkStudent: (studentId) => api.delete(`/families/unlink-student/${studentId}`),
   generateId: () => api.get('/families/generate/id'),
-  // Family billing
-  createCharge: (data) => api.post('/fee/family/charge', data),
-  createPayment: (data) => api.post('/fee/family/payment', data),
-  getLedger: (familyId, params) => api.get(`/fee/family/ledger/${familyId}`, { params }),
+};
+
+// Settings API
+export const settingsAPI = {
+  get: () => api.get('/settings'),
+  update: (data) => api.put('/settings', data),
 };
 
 export default api;

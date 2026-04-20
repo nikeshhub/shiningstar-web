@@ -4,6 +4,7 @@
  */
 
 export const ROLES = {
+  SUPER_ADMIN: 'SuperAdmin',
   ADMIN: 'Admin',
   TEACHER: 'Teacher',
   PARENT: 'Parent',
@@ -19,6 +20,7 @@ export const ACTIONS = {
 };
 
 export const MODULES = {
+  SYSTEM: 'system',
   STUDENTS: 'students',
   FAMILIES: 'families',
   CLASSES: 'classes',
@@ -41,6 +43,10 @@ export const MODULES = {
  * Parent has view-only access to their children's data
  */
 export const ROLE_PERMISSIONS = {
+  [ROLES.SUPER_ADMIN]: {
+    [MODULES.SYSTEM]: [ACTIONS.VIEW, ACTIONS.MANAGE],
+  },
+
   [ROLES.ADMIN]: {
     // Admin has full access to all modules
     [MODULES.STUDENTS]: [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.EDIT, ACTIONS.DELETE, ACTIONS.EXPORT],
@@ -59,17 +65,17 @@ export const ROLE_PERMISSIONS = {
   },
 
   [ROLES.TEACHER]: {
-    // Teacher has limited access
-    [MODULES.STUDENTS]: [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.EDIT],
+    // Teacher is a class-scoped academic operator.
+    [MODULES.STUDENTS]: [ACTIONS.VIEW],
     [MODULES.FAMILIES]: [], // No access
     [MODULES.CLASSES]: [ACTIONS.VIEW],
     [MODULES.SUBJECTS]: [ACTIONS.VIEW],
     [MODULES.TEACHERS]: [], // No access
     [MODULES.ATTENDANCE]: [ACTIONS.VIEW, ACTIONS.CREATE, ACTIONS.EDIT],
-    [MODULES.EXAMS]: [ACTIONS.VIEW, ACTIONS.EDIT], // Can view and enter marks
+    [MODULES.EXAMS]: [ACTIONS.VIEW, ACTIONS.EDIT], // Can view exams and enter marks for class-teacher classes
     [MODULES.FEES]: [], // No access
     [MODULES.INVENTORY]: [], // No access
-    [MODULES.NOTIFICATIONS]: [ACTIONS.VIEW],
+    [MODULES.NOTIFICATIONS]: [],
     [MODULES.TIMETABLE]: [ACTIONS.VIEW],
     [MODULES.TEACHER_ATTENDANCE]: [], // No access
     [MODULES.PROGRESS_REPORTS]: [ACTIONS.VIEW, ACTIONS.CREATE],
@@ -86,7 +92,7 @@ export const ROLE_PERMISSIONS = {
     [MODULES.EXAMS]: [ACTIONS.VIEW], // Only their children
     [MODULES.FEES]: [ACTIONS.VIEW], // Only their family
     [MODULES.INVENTORY]: [],
-    [MODULES.NOTIFICATIONS]: [ACTIONS.VIEW],
+    [MODULES.NOTIFICATIONS]: [],
     [MODULES.TIMETABLE]: [ACTIONS.VIEW],
     [MODULES.TEACHER_ATTENDANCE]: [],
     [MODULES.PROGRESS_REPORTS]: [ACTIONS.VIEW], // Only their children
@@ -101,7 +107,7 @@ export const ROLE_PERMISSIONS = {
  * @returns {boolean}
  */
 export function hasPermission(role, module, action) {
-  if (role === ROLES.ADMIN) return true; // Admin has full access
+  if (role === ROLES.ADMIN) return true; // Admin has full access across school modules
 
   const rolePermissions = ROLE_PERMISSIONS[role];
   if (!rolePermissions) return false;

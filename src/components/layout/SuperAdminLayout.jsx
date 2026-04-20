@@ -1,37 +1,34 @@
 import React, { useState } from 'react';
 import {
+  Avatar,
   Box,
-  Drawer,
-  Toolbar,
-  List,
-  Typography,
+  CssBaseline,
   Divider,
+  Drawer,
   IconButton,
+  List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  CssBaseline,
   Menu,
   MenuItem,
-  Avatar,
-  Badge,
-  InputBase,
+  Toolbar,
+  Typography,
 } from '@mui/material';
 import {
-  Menu as MenuIcon,
-  Notifications as NotificationsIcon,
   Logout as LogoutIcon,
-  Search as SearchIcon,
-  Settings as SettingsIcon,
+  Menu as MenuIcon,
 } from '@mui/icons-material';
-import { useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { dashboardNavigationSections, getDashboardTitle } from '../../config/dashboardConfig';
+import { getSuperAdminTitle, superAdminNavigationSections } from '../../config/dashboardConfig';
 
 const drawerWidth = 240;
 
-export default function Dashboard() {
+const getUserDisplay = (user) => user?.email || user?.phoneNumber || 'SuperAdmin';
+
+export default function SuperAdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
@@ -39,7 +36,7 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
 
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    setMobileOpen((prev) => !prev);
   };
 
   const handleMenuClick = (path) => {
@@ -60,15 +57,13 @@ export default function Dashboard() {
     navigate('/login');
   };
 
-  // Filter menu sections based on user role
-  const filteredMenuSections = dashboardNavigationSections.map((section) => ({
+  const filteredMenuSections = superAdminNavigationSections.map((section) => ({
     ...section,
-    items: section.items.filter((item) => {
-      if (!item.roles) return true;
-      return item.roles.includes(user?.role);
-    }),
+    items: section.items.filter((item) => item.roles?.includes(user?.role)),
   })).filter((section) => section.items.length > 0);
-  const currentPageTitle = getDashboardTitle(location.pathname);
+
+  const currentPageTitle = getSuperAdminTitle(location.pathname);
+  const displayName = getUserDisplay(user);
 
   const drawer = (
     <Box
@@ -90,7 +85,6 @@ export default function Dashboard() {
         },
       }}
     >
-      {/* Brand Block */}
       <Box sx={{ p: 2.5, pb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Box
@@ -127,13 +121,12 @@ export default function Dashboard() {
                 letterSpacing: '0.05em',
               }}
             >
-              Management
+              SuperAdmin
             </Typography>
           </Box>
         </Box>
       </Box>
 
-      {/* User Block */}
       <Box
         sx={{
           px: 2.5,
@@ -156,7 +149,7 @@ export default function Dashboard() {
                 fontFamily: 'Fraunces, serif',
               }}
             >
-              {user?.username?.charAt(0).toUpperCase() || 'U'}
+              {displayName.charAt(0).toUpperCase()}
             </Avatar>
             <Box
               sx={{
@@ -184,7 +177,7 @@ export default function Dashboard() {
                 whiteSpace: 'nowrap',
               }}
             >
-              {user?.username || 'User'}
+              {displayName}
             </Typography>
             <Typography
               sx={{
@@ -194,16 +187,15 @@ export default function Dashboard() {
                 lineHeight: 1,
               }}
             >
-              {user?.role || 'Role'}
+              {user?.role || 'SuperAdmin'}
             </Typography>
           </Box>
         </Box>
       </Box>
 
-      {/* Navigation */}
       <Box sx={{ flex: 1, overflowY: 'auto', px: 1.5, py: 1 }}>
-        {filteredMenuSections.map((section, sectionIndex) => (
-          <Box key={sectionIndex} sx={{ mb: 2 }}>
+        {filteredMenuSections.map((section) => (
+          <Box key={section.label} sx={{ mb: 2 }}>
             <Typography
               sx={{
                 fontSize: '9px',
@@ -221,6 +213,7 @@ export default function Dashboard() {
               {section.items.map((item) => {
                 const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
                 const Icon = item.icon;
+
                 return (
                   <ListItem key={item.text} disablePadding sx={{ mb: 0.25 }}>
                     <ListItemButton
@@ -264,25 +257,6 @@ export default function Dashboard() {
                           fontWeight: 500,
                         }}
                       />
-                      {item.badge && (
-                        <Box
-                          sx={{
-                            minWidth: 18,
-                            height: 18,
-                            px: 0.625,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            borderRadius: '100px',
-                            bgcolor: 'error.main',
-                            fontSize: '10px',
-                            fontWeight: 700,
-                            color: 'white',
-                          }}
-                        >
-                          {item.badge}
-                        </Box>
-                      )}
                     </ListItemButton>
                   </ListItem>
                 );
@@ -292,13 +266,7 @@ export default function Dashboard() {
         ))}
       </Box>
 
-      {/* Footer */}
-      <Box
-        sx={{
-          p: 2,
-          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-        }}
-      >
+      <Box sx={{ p: 2, borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
         <Typography
           sx={{
             fontSize: '10px',
@@ -316,7 +284,6 @@ export default function Dashboard() {
     <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <CssBaseline />
 
-      {/* Topbar */}
       <Box
         component="header"
         sx={{
@@ -344,7 +311,6 @@ export default function Dashboard() {
           <MenuIcon />
         </IconButton>
 
-        {/* Page Title - Will be updated per page */}
         <Box sx={{ flexGrow: 1 }}>
           <Typography
             variant="h4"
@@ -359,143 +325,54 @@ export default function Dashboard() {
           </Typography>
         </Box>
 
-        {/* Right Side Actions */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          {/* Search Bar */}
-          <Box
-            sx={{
-              display: { xs: 'none', md: 'flex' },
-              alignItems: 'center',
-              bgcolor: 'background.default',
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 1,
-              px: 1.5,
-              py: 0.75,
-              width: 180,
-            }}
-          >
-            <SearchIcon sx={{ fontSize: 16, color: 'text.secondary', mr: 0.75 }} />
-            <InputBase
-              placeholder="Search..."
-              sx={{
-                flex: 1,
-                fontSize: '12px',
-                color: 'text.primary',
-                '& input::placeholder': {
-                  color: 'text.secondary',
-                  opacity: 1,
-                },
-              }}
-            />
-          </Box>
-
-          {/* Icon Buttons */}
-          <IconButton
-            size="small"
+        <IconButton onClick={handleProfileMenuOpen} size="small">
+          <Avatar
             sx={{
               width: 36,
               height: 36,
-              bgcolor: 'background.default',
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 1,
-              '&:hover': {
-                bgcolor: 'primary.light',
-                borderColor: 'primary.main',
-              },
+              bgcolor: 'primary.light',
+              color: 'primary.main',
+              fontSize: '14px',
+              fontWeight: 700,
+              fontFamily: 'Fraunces, serif',
             }}
           >
-            <Badge
-              badgeContent={3}
-              color="error"
-              sx={{
-                '& .MuiBadge-badge': {
-                  fontSize: '9px',
-                  height: 14,
-                  minWidth: 14,
-                  fontWeight: 700,
-                },
-              }}
-            >
-              <NotificationsIcon sx={{ fontSize: 18 }} />
-            </Badge>
-          </IconButton>
+            {displayName.charAt(0).toUpperCase()}
+          </Avatar>
+        </IconButton>
 
-          <IconButton
-            size="small"
-            sx={{
-              width: 36,
-              height: 36,
-              bgcolor: 'background.default',
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 1,
-              '&:hover': {
-                bgcolor: 'primary.light',
-                borderColor: 'primary.main',
-              },
-            }}
-          >
-            <SettingsIcon sx={{ fontSize: 18 }} />
-          </IconButton>
-
-          {/* User Avatar */}
-          <IconButton onClick={handleProfileMenuOpen} size="small">
-            <Avatar
-              sx={{
-                width: 36,
-                height: 36,
-                bgcolor: 'primary.light',
-                color: 'primary.main',
-                fontSize: '14px',
-                fontWeight: 700,
-                fontFamily: 'Fraunces, serif',
-              }}
-            >
-              {user?.username?.charAt(0).toUpperCase() || 'U'}
-            </Avatar>
-          </IconButton>
-
-          {/* Profile Menu */}
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleProfileMenuClose}
-            PaperProps={{
-              sx: {
-                mt: 1,
-                minWidth: 200,
-              },
-            }}
-          >
-            <MenuItem disabled>
-              <Box>
-                <Typography variant="body2" fontWeight="bold">
-                  {user?.username}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {user?.email}
-                </Typography>
-              </Box>
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon>
-                <LogoutIcon fontSize="small" />
-              </ListItemIcon>
-              Logout
-            </MenuItem>
-          </Menu>
-        </Box>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleProfileMenuClose}
+          PaperProps={{
+            sx: {
+              mt: 1,
+              minWidth: 220,
+            },
+          }}
+        >
+          <MenuItem disabled>
+            <Box>
+              <Typography variant="body2" fontWeight="bold">
+                {displayName}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {user?.role || 'SuperAdmin'}
+              </Typography>
+            </Box>
+          </MenuItem>
+          <Divider />
+          <MenuItem onClick={handleLogout}>
+            <ListItemIcon>
+              <LogoutIcon fontSize="small" />
+            </ListItemIcon>
+            Logout
+          </MenuItem>
+        </Menu>
       </Box>
 
-      {/* Sidebar */}
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-      >
-        {/* Mobile Drawer */}
+      <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
         <Drawer
           variant="temporary"
           open={mobileOpen}
@@ -515,7 +392,6 @@ export default function Dashboard() {
           {drawer}
         </Drawer>
 
-        {/* Desktop Drawer */}
         <Drawer
           variant="permanent"
           sx={{
@@ -532,7 +408,6 @@ export default function Dashboard() {
         </Drawer>
       </Box>
 
-      {/* Main Content */}
       <Box
         component="main"
         sx={{
@@ -543,10 +418,8 @@ export default function Dashboard() {
           overflow: 'hidden',
         }}
       >
-        {/* Spacer for fixed topbar */}
-        <Box sx={{ height: '60px', flexShrink: 0 }} />
+        <Toolbar sx={{ height: '60px', flexShrink: 0 }} />
 
-        {/* Scrollable Content */}
         <Box
           sx={{
             flex: 1,
