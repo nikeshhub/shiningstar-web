@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { getCurrentBSDateParts } from '../../utils/nepaliDate';
 import './Footer.css';
+
+const currentBSYear = getCurrentBSDateParts()?.year || '';
 
 const Footer = () => {
   return (
@@ -14,7 +17,7 @@ const Footer = () => {
               <h3 className="footer__heading">Shining Star</h3>
             </div>
             <p className="footer__text">
-              Empowering young minds in Panchthar, Nepal with quality English education since 1994.
+              Empowering young minds in Panchthar, Nepal with quality English education since 2051 BS.
             </p>
             <p className="footer__text footer__text--small">
               Committed to excellence in education and character building.
@@ -63,7 +66,7 @@ const Footer = () => {
 
         <div className="footer__bottom">
           <p className="footer__copyright">
-            &copy; {new Date().getFullYear()} Shining Star English School. All rights reserved.
+            &copy; {currentBSYear} Shining Star English School. All rights reserved.
           </p>
         </div>
       </div>

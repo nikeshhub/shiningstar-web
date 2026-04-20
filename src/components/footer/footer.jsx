@@ -1,8 +1,10 @@
 import React from 'react';
 import { Layout, Row, Col, Typography, Divider } from 'antd';
+import { getCurrentBSDateParts } from '../../utils/nepaliDate';
 
 const { Footer } = Layout;
 const { Title, Text } = Typography;
+const currentBSYear = getCurrentBSDateParts()?.year || '';
 
 const FooterPage = () => {
   return (
@@ -16,7 +18,7 @@ const FooterPage = () => {
       <Divider style={{ margin: '20px 0', backgroundColor: '#fff' }} />
       <Row justify="center">
         <Col span={24} style={{ textAlign: 'center' }}>
-          <Text style={{ color: '#fff' }}>© 2023 Shining Star English School. All rights reserved.</Text>
+          <Text style={{ color: '#fff' }}>© {currentBSYear} Shining Star English School. All rights reserved.</Text>
         </Col>
       </Row>
     </Footer>
