@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Tabs, Tab } from '@mui/material';
+import { Box, Typography, Tabs, Tab, Grid, Card, CardContent, Chip } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, DetailPage, DetailSection, DetailRow, StatusChip } from '../../components/common';
-import { studentAPI } from '../../services/api';
+import { attendanceAPI, studentAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { formatBSDate } from '../../utils/nepaliDate';
 
 export default function ParentChildDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [student, setStudent] = useState(null);
+  const [attendanceReport, setAttendanceReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
 
@@ -38,18 +40,31 @@ export default function ParentChildDetail() {
         const studentData = response.data.data;
 
         // Verify this student belongs to the logged-in parent's family
-        if (studentData.family?._id !== user.profile) {
+        const studentFamilyId = studentData.family?._id || studentData.family;
+        if (studentFamilyId !== user.profile) {
           navigate('/parent');
           return;
         }
 
         setStudent(studentData);
+        loadChildAttendanceData();
       }
     } catch (error) {
       console.error('Error loading student:', error);
       navigate('/parent');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadChildAttendanceData = async () => {
+    try {
+      const response = await attendanceAPI.getStudentReport({ studentId: id });
+      if (response.data.success) {
+        setAttendanceReport(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error loading child attendance:', error);
     }
   };
 
@@ -91,6 +106,7 @@ export default function ParentChildDetail() {
       <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ mb: 3 }}>
         <Tab label="Basic Information" />
         <Tab label="Academic Information" />
+        <Tab label="Attendance" />
         <Tab label="Fee Summary" />
       </Tabs>
 
@@ -99,7 +115,7 @@ export default function ParentChildDetail() {
           <DetailSection title="Basic Information">
             <DetailRow label="Student ID" value={student.studentId} />
             <DetailRow label="Status" value={<StatusChip status={student.status} />} />
-            <DetailRow label="Date of Birth" value={student.dateOfBirth?.split('T')[0] || '-'} />
+            <DetailRow label="Date of Birth" value={formatBSDate(student.dateOfBirth)} />
             <DetailRow label="Age" value={calculateAge(student.dateOfBirth)} />
             <DetailRow label="Gender" value={student.gender} />
           </DetailSection>
@@ -111,7 +127,7 @@ export default function ParentChildDetail() {
           <DetailSection title="Academic Information">
             <DetailRow label="Class" value={student.currentClass?.className || '-'} />
             <DetailRow label="Roll Number" value={student.rollNumber} />
-            <DetailRow label="Admission Date" value={student.admissionDate?.split('T')[0] || '-'} />
+            <DetailRow label="Admission Date" value={formatBSDate(student.admissionDate)} />
             <DetailRow label="Academic Year" value={student.academicYear} />
             <DetailRow label="Previous School" value={student.previousSchool} />
             <DetailRow label="Remarks" value={student.remarks} colSpan={12} />
@@ -121,13 +137,53 @@ export default function ParentChildDetail() {
 
       {tabValue === 2 && (
         <>
-          <DetailSection title="Fee Summary">
+          <DetailSection title="Attendance Summary">
+            <DetailRow label="Total Days" value={attendanceReport?.summary?.totalDays ?? 0} />
+            <DetailRow label="Present" value={attendanceReport?.summary?.present ?? 0} />
+            <DetailRow label="Absent" value={attendanceReport?.summary?.absent ?? 0} />
+            <DetailRow label="Late" value={attendanceReport?.summary?.late ?? 0} />
+            <DetailRow label="Attendance %" value={`${attendanceReport?.summary?.attendancePercentage ?? 0}%`} />
+          </DetailSection>
+
+          <Typography variant="h6" sx={{ fontWeight: 600, mt: 3, mb: 1.5 }}>
+            Recent Attendance
+          </Typography>
+          <Grid container spacing={1.5}>
+            {(attendanceReport?.records || []).slice(0, 8).map((record, index) => (
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={`${record.date}-${index}`}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {formatBSDate(record.date)}
+                    </Typography>
+                    <Chip label={record.status} size="small" sx={{ mt: 1 }} />
+                    {record.remarks && (
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                        {record.remarks}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+            {(attendanceReport?.records || []).length === 0 && (
+              <Grid size={12}>
+                <Typography color="text.secondary">No attendance records found.</Typography>
+              </Grid>
+            )}
+          </Grid>
+        </>
+      )}
+
+      {tabValue === 3 && (
+        <>
+          <DetailSection title="Family Fee Summary">
             <DetailRow
-              label="Total Due"
+              label="Total Due (Family)"
               value={
-                student.feeBalance?.totalDue > 0 ? (
+                student.family?.familyFeeBalance?.totalDue > 0 ? (
                   <Typography color="error" sx={{ fontWeight: 600 }}>
-                    Rs. {student.feeBalance.totalDue}
+                    Rs. {student.family.familyFeeBalance.totalDue}
                   </Typography>
                 ) : (
                   'Rs. 0'
@@ -135,11 +191,11 @@ export default function ParentChildDetail() {
               }
             />
             <DetailRow
-              label="Total Advance"
+              label="Total Advance (Family)"
               value={
-                student.feeBalance?.totalAdvance > 0 ? (
+                student.family?.familyFeeBalance?.totalAdvance > 0 ? (
                   <Typography color="success.main" sx={{ fontWeight: 600 }}>
-                    Rs. {student.feeBalance.totalAdvance}
+                    Rs. {student.family.familyFeeBalance.totalAdvance}
                   </Typography>
                 ) : (
                   'Rs. 0'
