@@ -161,7 +161,7 @@ export default function FamilyForm() {
             </Box>
             <Grid container spacing={3}>
               {isEdit && (
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <TextField
                     fullWidth
                     label="Family ID"
@@ -172,9 +172,9 @@ export default function FamilyForm() {
                   />
                 </Grid>
               )}
-              <Grid item xs={12} md={isEdit ? 4 : 6}>
+              <Grid size={{ xs: 12, md: isEdit ? 4 : 6 }}>
                 <Select
-                  label="Billing Type *"
+                  label="Billing Type"
                   name="billingType"
                   value={formData.billingType}
                   onChange={handleChange}
@@ -185,9 +185,9 @@ export default function FamilyForm() {
                 />
               </Grid>
               {isEdit && (
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Select
-                    label="Status *"
+                    label="Status"
                     name="status"
                     value={formData.status || 'Active'}
                     onChange={handleChange}
@@ -211,10 +211,10 @@ export default function FamilyForm() {
               </Typography>
             </Box>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
-                  label="Name *"
+                  label="Name"
                   name="name"
                   value={formData.primaryContact.name}
                   onChange={handlePrimaryContactChange}
@@ -222,9 +222,9 @@ export default function FamilyForm() {
                   placeholder="e.g., Ram Prasad Sharma"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Select
-                  label="Relation *"
+                  label="Relation"
                   name="relation"
                   value={formData.primaryContact.relation}
                   onChange={handlePrimaryContactChange}
@@ -233,10 +233,10 @@ export default function FamilyForm() {
                   allowNone={false}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
-                  label="Citizenship *"
+                  label="Citizenship"
                   name="citizenship"
                   value={formData.primaryContact.citizenship}
                   onChange={handlePrimaryContactChange}
@@ -244,10 +244,10 @@ export default function FamilyForm() {
                   placeholder="e.g., Nepali"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
-                  label="Mobile Number *"
+                  label="Mobile Number"
                   name="mobile"
                   value={formData.primaryContact.mobile}
                   onChange={handlePrimaryContactChange}
@@ -255,7 +255,7 @@ export default function FamilyForm() {
                   placeholder="e.g., 9841234567"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Alternate Mobile"
@@ -265,7 +265,7 @@ export default function FamilyForm() {
                   placeholder="e.g., 9801234567"
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <TextField
                   fullWidth
                   label="Email"
@@ -293,7 +293,7 @@ export default function FamilyForm() {
               Optional - for additional parent/guardian
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Name"
@@ -303,7 +303,7 @@ export default function FamilyForm() {
                   placeholder="e.g., Sita Devi Sharma"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Select
                   label="Relation"
                   name="relation"
@@ -313,7 +313,7 @@ export default function FamilyForm() {
                   allowNone={true}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Citizenship"
@@ -323,7 +323,7 @@ export default function FamilyForm() {
                   placeholder="e.g., Nepali"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Mobile Number"
@@ -333,7 +333,7 @@ export default function FamilyForm() {
                   placeholder="e.g., 9851234567"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Email"
@@ -358,10 +358,10 @@ export default function FamilyForm() {
               </Typography>
             </Box>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <TextField
                   fullWidth
-                  label="Address *"
+                  label="Address"
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
@@ -371,7 +371,7 @@ export default function FamilyForm() {
                   placeholder="e.g., Yangwarak-4, Tharpu, Panchthar"
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <TextField
                   fullWidth
                   label="Remarks"

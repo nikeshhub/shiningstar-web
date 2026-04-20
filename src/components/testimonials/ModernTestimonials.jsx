@@ -120,7 +120,7 @@ export default function ModernTestimonials() {
         {/* Testimonials Grid */}
         <Grid container spacing={4}>
           {testimonials.map((testimonial, index) => (
-            <Grid item xs={12} md={6} lg={4} key={testimonial.id}>
+            <Grid size={{ xs: 12, md: 6, lg: 4 }} key={testimonial.id}>
               <Card
                 elevation={0}
                 sx={{

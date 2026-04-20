@@ -99,7 +99,7 @@ export default function Contact() {
         <Grid container spacing={4}>
           {/* Contact Information */}
           {contactInfo.map((info, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
               <Paper
                 sx={{
                   p: 3,
@@ -126,27 +126,27 @@ export default function Contact() {
           ))}
 
           {/* Contact Form */}
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Paper sx={{ p: 4, mt: 2 }}>
               <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
                 Send us a Message
               </Typography>
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       fullWidth
-                      label="Your Name *"
+                      label="Your Name"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
                       required
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       fullWidth
-                      label="Email *"
+                      label="Email"
                       name="email"
                       type="email"
                       value={formData.email}
@@ -154,7 +154,7 @@ export default function Contact() {
                       required
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       fullWidth
                       label="Phone Number"
@@ -163,20 +163,20 @@ export default function Contact() {
                       onChange={handleChange}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       fullWidth
-                      label="Subject *"
+                      label="Subject"
                       name="subject"
                       value={formData.subject}
                       onChange={handleChange}
                       required
                     />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <TextField
                       fullWidth
-                      label="Message *"
+                      label="Message"
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
@@ -185,7 +185,7 @@ export default function Contact() {
                       required
                     />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <Button
                       type="submit"
                       variant="contained"
@@ -201,7 +201,7 @@ export default function Contact() {
           </Grid>
 
           {/* Google Maps Embed */}
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Paper sx={{ p: 2, mt: 2 }}>
               <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
                 Find Us on Map

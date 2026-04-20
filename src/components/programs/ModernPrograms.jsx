@@ -216,7 +216,7 @@ export default function ModernPrograms() {
         {/* Programs Grid */}
         <Grid container spacing={4}>
           {getFilteredPrograms().map((program, index) => (
-            <Grid item xs={12} md={6} key={index}>
+            <Grid size={{ xs: 12, md: 6 }} key={index}>
               <Card
                 elevation={0}
                 sx={{
@@ -317,7 +317,7 @@ export default function ModernPrograms() {
 
                   <Grid container spacing={1.5}>
                     {program.highlights.map((highlight, idx) => (
-                      <Grid item xs={12} sm={6} key={idx}>
+                      <Grid size={{ xs: 12, sm: 6 }} key={idx}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <CheckIcon sx={{ fontSize: 18, color: '#10b981' }} />
                           <Typography variant="body2" sx={{ color: '#64748b' }}>

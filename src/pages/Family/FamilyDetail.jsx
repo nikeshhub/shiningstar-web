@@ -161,7 +161,7 @@ export default function FamilyDetail() {
         <CardContent sx={{ p: 4 }}>
           <Grid container spacing={3}>
             {/* Primary Contact */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
                 Primary Contact
               </Typography>
@@ -182,7 +182,7 @@ export default function FamilyDetail() {
             </Grid>
 
             {/* Family Info & Balance */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="body1" sx={{ mb: 1 }}>
                 <strong>Address:</strong> {family.address}
               </Typography>

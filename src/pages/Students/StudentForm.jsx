@@ -17,9 +17,12 @@ import {
   ArrowBack as ArrowBackIcon,
   CameraAlt as CameraIcon,
   Description as DocumentIcon,
+  UploadFile as UploadIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
+import { IconButton } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, FormField, FormSelect, Toast } from '../../components/common';
+import { Button, FormField, FormSelect, FormAutocompleteSelect, Toast } from '../../components/common';
 import { studentAPI, classAPI, familyAPI } from '../../services/api';
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
@@ -66,6 +69,7 @@ export default function StudentForm() {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [photoFile, setPhotoFile] = useState(null);
   const [birthCertificateFile, setBirthCertificateFile] = useState(null);
+  const [birthCertificatePreview, setBirthCertificatePreview] = useState(null);
   const [cameraStream, setCameraStream] = useState(null);
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = React.useRef(null);
@@ -119,9 +123,10 @@ export default function StudentForm() {
             remarks: s.remarks || '',
           });
           if (s.photo) {
-            // Construct full URL for existing photo
-            const photoUrl = s.photo.startsWith('http') ? s.photo : `http://localhost:8000${s.photo}`;
-            setPhotoPreview(photoUrl);
+            setPhotoPreview(s.photo.startsWith('http') ? s.photo : `http://localhost:8000${s.photo}`);
+          }
+          if (s.birthCertificate) {
+            setBirthCertificatePreview(s.birthCertificate.startsWith('http') ? s.birthCertificate : `http://localhost:8000${s.birthCertificate}`);
           }
         }
       }).catch(err => console.error(err));
@@ -221,7 +226,15 @@ export default function StudentForm() {
     const file = e.target.files[0];
     if (file) {
       setBirthCertificateFile(file);
-      setToast({ open: true, message: `Birth certificate "${file.name}" selected`, severity: 'info' });
+      setBirthCertificatePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
     }
   };
 
@@ -265,7 +278,7 @@ export default function StudentForm() {
               </Typography>
             </Box>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormField
                   control={control}
                   name="name"
@@ -275,7 +288,7 @@ export default function StudentForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormField
                   control={control}
                   name="dateOfBirth"
@@ -286,7 +299,7 @@ export default function StudentForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormSelect
                   control={control}
                   name="gender"
@@ -296,20 +309,20 @@ export default function StudentForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <FormSelect
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormAutocompleteSelect
                   control={control}
                   name="family"
                   label="Family"
                   options={familyOptions}
                   required
-                  placeholder="Select student's family"
+                  placeholder="Type to search family..."
                   helperText="Parent/Guardian contact information"
                 />
               </Grid>
 
               {isEdit && (
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormSelect
                     control={control}
                     name="status"
@@ -343,7 +356,7 @@ export default function StudentForm() {
               Class assignment and admission details
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormSelect
                   control={control}
                   name="currentClass"
@@ -354,7 +367,7 @@ export default function StudentForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormField
                   control={control}
                   name="rollNumber"
@@ -365,7 +378,7 @@ export default function StudentForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormField
                   control={control}
                   name="admissionDate"
@@ -376,7 +389,7 @@ export default function StudentForm() {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormField
                   control={control}
                   name="academicYear"
@@ -387,7 +400,7 @@ export default function StudentForm() {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <FormField
                   control={control}
                   name="previousSchool"
@@ -396,7 +409,7 @@ export default function StudentForm() {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <FormField
                   control={control}
                   name="remarks"
@@ -421,7 +434,7 @@ export default function StudentForm() {
             </Box>
             <Grid container spacing={3}>
               {/* Birth Certificate Upload */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Box>
                   <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
                     Birth Certificate
@@ -429,35 +442,111 @@ export default function StudentForm() {
                   <Button
                     variant="outlined"
                     component="label"
-                    startIcon={<DocumentIcon />}
+                    startIcon={<UploadIcon />}
                     fullWidth
                   >
-                    Upload Birth Certificate
+                    {birthCertificatePreview ? 'Change Birth Certificate' : 'Upload Birth Certificate'}
                     <input
                       type="file"
                       hidden
-                      accept="image/*,.pdf"
+                      accept="image/*"
                       onChange={handleBirthCertificateChange}
                     />
                   </Button>
+                  {birthCertificatePreview && (
+                    <Box sx={{ mt: 2, position: 'relative', display: 'inline-block', width: '100%', textAlign: 'center' }}>
+                      <Box
+                        component="img"
+                        src={birthCertificatePreview}
+                        alt="Birth Certificate"
+                        sx={{
+                          maxWidth: '100%',
+                          maxHeight: '200px',
+                          borderRadius: 2,
+                          border: '2px solid #e0e0e0',
+                          objectFit: 'contain',
+                          display: 'block',
+                          mx: 'auto',
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={() => { setBirthCertificatePreview(null); setBirthCertificateFile(null); }}
+                        sx={{
+                          position: 'absolute', top: 4, right: 4,
+                          bgcolor: 'rgba(0,0,0,0.55)', color: '#fff',
+                          '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
+                        }}
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  )}
                 </Box>
               </Grid>
 
               {/* Student Photo */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Box>
                   <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
                     Student Photo
                   </Typography>
                   {!showCamera ? (
-                    <Button
-                      variant="outlined"
-                      startIcon={<CameraIcon />}
-                      onClick={startCamera}
-                      fullWidth
-                    >
-                      Capture Photo
-                    </Button>
+                    <>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          variant="outlined"
+                          component="label"
+                          startIcon={<UploadIcon />}
+                          sx={{ flex: 1 }}
+                        >
+                          Upload Photo
+                          <input
+                            type="file"
+                            hidden
+                            accept="image/*"
+                            onChange={handlePhotoUpload}
+                          />
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          startIcon={<CameraIcon />}
+                          onClick={startCamera}
+                          sx={{ flex: 1 }}
+                        >
+                          Take Photo
+                        </Button>
+                      </Box>
+                      {photoPreview && (
+                        <Box sx={{ mt: 2, position: 'relative', display: 'inline-block', width: '100%', textAlign: 'center' }}>
+                          <Box
+                            component="img"
+                            src={photoPreview}
+                            alt="Student"
+                            sx={{
+                              maxWidth: '100%',
+                              maxHeight: '200px',
+                              borderRadius: 2,
+                              border: '2px solid #e0e0e0',
+                              objectFit: 'contain',
+                              display: 'block',
+                              mx: 'auto',
+                            }}
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={() => { setPhotoPreview(null); setPhotoFile(null); }}
+                            sx={{
+                              position: 'absolute', top: 4, right: 4,
+                              bgcolor: 'rgba(0,0,0,0.55)', color: '#fff',
+                              '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
+                            }}
+                          >
+                            <CloseIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      )}
+                    </>
                   ) : (
                     <Box sx={{ textAlign: 'center' }}>
                       <Box sx={{ mb: 2, position: 'relative', display: 'inline-block' }}>
@@ -485,28 +574,6 @@ export default function StudentForm() {
                   )}
                 </Box>
               </Grid>
-
-              {/* Photo Preview */}
-              {photoPreview && (
-                <Grid item xs={12}>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                      Photo Preview
-                    </Typography>
-                    <Box
-                      component="img"
-                      src={photoPreview}
-                      alt="Student"
-                      sx={{
-                        maxWidth: '200px',
-                        maxHeight: '200px',
-                        borderRadius: 2,
-                        border: '2px solid #e0e0e0',
-                      }}
-                    />
-                  </Box>
-                </Grid>
-              )}
             </Grid>
             <canvas ref={canvasRef} style={{ display: 'none' }} />
           </CardContent>

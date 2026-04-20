@@ -12,7 +12,7 @@ import {
   alpha,
 } from '@mui/material';
 import { School as SchoolIcon, People as PeopleIcon, MenuBook as MenuBookIcon } from '@mui/icons-material';
-import { Button, Toast, FormField, FormSelect, FormMultiSelect } from '../../components/common';
+import { Button, Toast, FormField, FormSelect, FormAutocompleteSelect, FormMultiSelect } from '../../components/common';
 import { classAPI, teacherAPI, subjectAPI } from '../../services/api';
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ export default function ClassForm({ classData, onSuccess, onCancel }) {
               </Typography>
             </Box>
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormField
                   control={control}
                   name="className"
@@ -178,17 +178,17 @@ export default function ClassForm({ classData, onSuccess, onCancel }) {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <FormSelect
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <FormAutocompleteSelect
                   control={control}
                   name="classTeacher"
                   label="Class Teacher"
                   options={teacherOptions}
-                  placeholder="Select a teacher (optional)"
+                  placeholder="Type to search teacher..."
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormField
                   control={control}
                   name="capacity"
@@ -199,7 +199,7 @@ export default function ClassForm({ classData, onSuccess, onCancel }) {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormField
                   control={control}
                   name="monthlyFee"
@@ -212,7 +212,7 @@ export default function ClassForm({ classData, onSuccess, onCancel }) {
               </Grid>
 
               {isEdit && (
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormSelect
                     control={control}
                     name="status"
@@ -246,7 +246,7 @@ export default function ClassForm({ classData, onSuccess, onCancel }) {
               Select the subjects that will be taught in this class
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <FormMultiSelect
                   control={control}
                   name="subjects"
@@ -270,7 +270,7 @@ export default function ClassForm({ classData, onSuccess, onCancel }) {
                 </Typography>
               </Box>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Box sx={{
                     p: 2,
                     bgcolor: 'background.paper',
@@ -286,7 +286,7 @@ export default function ClassForm({ classData, onSuccess, onCancel }) {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Box sx={{
                     p: 2,
                     bgcolor: 'background.paper',

@@ -124,7 +124,7 @@ export default function ModernFacilities() {
         <Box sx={{ maxWidth: '1400px', margin: '0 auto' }}>
           <Grid container spacing={{ xs: 3, md: 4 }} justifyContent="center">
             {facilities.map((facility, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={4} key={index} sx={{ display: 'flex' }}>
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={index} sx={{ display: 'flex' }}>
                 <Card
                   elevation={0}
                   sx={{

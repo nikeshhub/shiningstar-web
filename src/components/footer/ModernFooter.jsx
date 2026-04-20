@@ -65,7 +65,7 @@ export default function ModernFooter() {
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
         <Grid container spacing={4}>
           {/* About Section */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ mb: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Box
@@ -126,7 +126,7 @@ export default function ModernFooter() {
           </Grid>
 
           {/* Quick Links */}
-          <Grid item xs={6} md={2}>
+          <Grid size={{ xs: 6, md: 2 }}>
             <Typography
               variant="h6"
               sx={{
@@ -170,7 +170,7 @@ export default function ModernFooter() {
           </Grid>
 
           {/* Programs */}
-          <Grid item xs={6} md={3}>
+          <Grid size={{ xs: 6, md: 3 }}>
             <Typography
               variant="h6"
               sx={{
@@ -208,7 +208,7 @@ export default function ModernFooter() {
           </Grid>
 
           {/* Contact Info */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Typography
               variant="h6"
               sx={{

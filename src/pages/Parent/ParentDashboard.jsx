@@ -77,7 +77,7 @@ export default function ParentDashboard() {
 
       {/* Summary Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -97,7 +97,7 @@ export default function ParentDashboard() {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card sx={{ boxShadow: 2 }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -135,7 +135,7 @@ export default function ParentDashboard() {
       ) : (
         <Grid container spacing={3}>
           {students.map((student) => (
-            <Grid item xs={12} md={6} key={student._id}>
+            <Grid size={{ xs: 12, md: 6 }} key={student._id}>
               <Card
                 sx={{
                   boxShadow: 2,
@@ -168,7 +168,7 @@ export default function ParentDashboard() {
                   <Divider sx={{ mb: 2 }} />
 
                   <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid size={6}>
                       <Typography variant="caption" color="text.secondary">
                         Class
                       </Typography>
@@ -176,7 +176,7 @@ export default function ParentDashboard() {
                         {student.currentClass?.className || '-'}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={6}>
                       <Typography variant="caption" color="text.secondary">
                         Roll No.
                       </Typography>
@@ -184,7 +184,7 @@ export default function ParentDashboard() {
                         {student.rollNumber || '-'}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={6}>
                       <Typography variant="caption" color="text.secondary">
                         Age
                       </Typography>
@@ -192,7 +192,7 @@ export default function ParentDashboard() {
                         {calculateAge(student.dateOfBirth)} years
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={6}>
                       <Typography variant="caption" color="text.secondary">
                         Gender
                       </Typography>

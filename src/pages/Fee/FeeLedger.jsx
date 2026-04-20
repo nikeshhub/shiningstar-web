@@ -76,14 +76,14 @@ export default function FeeLedger() {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Typography variant="h6">{student.name}</Typography>
                 <Typography color="text.secondary">Student ID: {student.studentId}</Typography>
                 <Typography color="text.secondary">
                   Class: {student.currentClass?.className}
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 {currentBalance && (
                   <Box sx={{ textAlign: { md: 'right' } }}>
                     {currentBalance.totalDue > 0 ? (

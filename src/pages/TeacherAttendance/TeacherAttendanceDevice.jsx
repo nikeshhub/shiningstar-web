@@ -13,7 +13,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { Button, Select, Toast } from '../../components/common';
+import { Button, FormAutocompleteSelect, Toast } from '../../components/common';
 import { teacherAPI, teacherAttendanceAPI } from '../../services/api';
 
 const STATUS_OPTIONS = ['Present', 'Absent', 'Leave'];
@@ -115,17 +115,17 @@ export default function TeacherAttendanceDevice() {
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
-            <Select
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <FormAutocompleteSelect
               label="Teacher"
               name="teacher"
               value={selectedTeacher}
               onChange={(e) => setSelectedTeacher(e.target.value)}
               options={teacherOptions}
-              placeholder="Select Teacher"
+              placeholder="Type to search teacher..."
             />
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <TextField
               fullWidth
               label="Date"
@@ -135,7 +135,7 @@ export default function TeacherAttendanceDevice() {
               InputLabelProps={{ shrink: true }}
             />
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <TextField
               fullWidth
               label="Device Name"
@@ -143,12 +143,12 @@ export default function TeacherAttendanceDevice() {
               onChange={(e) => setDeviceName(e.target.value)}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Button fullWidth onClick={() => handleMark('in')} loading={loading}>
               Mark IN
             </Button>
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Button fullWidth variant="outlined" onClick={() => handleMark('out')} loading={loading}>
               Mark OUT
             </Button>

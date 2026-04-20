@@ -235,7 +235,7 @@ export default function AttendanceMark() {
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Select
               label="Select Class"
               name="class"
@@ -247,7 +247,7 @@ export default function AttendanceMark() {
               noneLabel="Select Class"
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Date"
@@ -270,22 +270,22 @@ export default function AttendanceMark() {
         <>
           <Paper sx={{ p: 2, mb: 2 }}>
             <Grid container spacing={2}>
-              <Grid item xs={3}>
+              <Grid size={3}>
                 <Typography variant="h6" color="success.main">
                   Present: {stats.present}
                 </Typography>
               </Grid>
-              <Grid item xs={3}>
+              <Grid size={3}>
                 <Typography variant="h6" color="error.main">
                   Absent: {stats.absent}
                 </Typography>
               </Grid>
-              <Grid item xs={3}>
+              <Grid size={3}>
                 <Typography variant="h6" color="warning.main">
                   Late: {stats.late}
                 </Typography>
               </Grid>
-              <Grid item xs={3}>
+              <Grid size={3}>
                 <Typography variant="h6" color="info.main">
                   Excused: {stats.excused}
                 </Typography>

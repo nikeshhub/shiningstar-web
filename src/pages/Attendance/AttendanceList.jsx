@@ -231,7 +231,7 @@ export default function AttendanceList() {
             Filters
           </Typography>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={tabValue === 0 ? 4 : 6}>
+            <Grid size={{ xs: 12, md: tabValue === 0 ? 4 : 6 }}>
               <Select
                 label="Select Class"
                 name="class"
@@ -246,7 +246,7 @@ export default function AttendanceList() {
 
             {tabValue === 0 ? (
               <>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Select
                     label="Month"
                     name="month"
@@ -256,7 +256,7 @@ export default function AttendanceList() {
                     allowNone={false}
                   />
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Select
                     label="Year"
                     name="year"
@@ -268,7 +268,7 @@ export default function AttendanceList() {
                 </Grid>
               </>
             ) : (
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Date"
@@ -286,7 +286,7 @@ export default function AttendanceList() {
       {/* Monthly View */}
       {tabValue === 0 && monthlyReport && (
         <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card sx={{ bgcolor: alpha('#2196f3', 0.05), border: '1px solid', borderColor: alpha('#2196f3', 0.2) }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -304,7 +304,7 @@ export default function AttendanceList() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card sx={{ bgcolor: alpha('#4caf50', 0.05), border: '1px solid', borderColor: alpha('#4caf50', 0.2) }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -322,7 +322,7 @@ export default function AttendanceList() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card sx={{ bgcolor: alpha('#ff9800', 0.05), border: '1px solid', borderColor: alpha('#ff9800', 0.2) }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -340,7 +340,7 @@ export default function AttendanceList() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card sx={{ bgcolor: alpha('#9c27b0', 0.05), border: '1px solid', borderColor: alpha('#9c27b0', 0.2) }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -509,7 +509,7 @@ export default function AttendanceList() {
 
             <Box sx={{ p: 3 }}>
               <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Box sx={{ textAlign: 'center', p: 2, bgcolor: alpha('#4caf50', 0.05), borderRadius: 2 }}>
                     <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
                       {dailyAttendance.students.filter(s => s.status === 'Present').length}
@@ -517,7 +517,7 @@ export default function AttendanceList() {
                     <Typography variant="caption" color="text.secondary">Present</Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Box sx={{ textAlign: 'center', p: 2, bgcolor: alpha('#f44336', 0.05), borderRadius: 2 }}>
                     <Typography variant="h4" sx={{ fontWeight: 700, color: 'error.main' }}>
                       {dailyAttendance.students.filter(s => s.status === 'Absent').length}
@@ -525,7 +525,7 @@ export default function AttendanceList() {
                     <Typography variant="caption" color="text.secondary">Absent</Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Box sx={{ textAlign: 'center', p: 2, bgcolor: alpha('#ff9800', 0.05), borderRadius: 2 }}>
                     <Typography variant="h4" sx={{ fontWeight: 700, color: 'warning.main' }}>
                       {dailyAttendance.students.filter(s => s.status === 'Late').length}
@@ -533,7 +533,7 @@ export default function AttendanceList() {
                     <Typography variant="caption" color="text.secondary">Late</Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Box sx={{ textAlign: 'center', p: 2, bgcolor: alpha('#2196f3', 0.05), borderRadius: 2 }}>
                     <Typography variant="h4" sx={{ fontWeight: 700, color: 'info.main' }}>
                       {dailyAttendance.students.filter(s => s.status === 'Excused').length}

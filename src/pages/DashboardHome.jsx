@@ -49,7 +49,7 @@ export default function DashboardHome() {
 
       <Grid container spacing={2.5}>
         {/* Stats Cards */}
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
             label="Active Students"
             value={stats.activeStudents}
@@ -59,7 +59,7 @@ export default function DashboardHome() {
             emoji="🎓"
           />
         </Grid>
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
             label="Total Classes"
             value={stats.totalClasses}
@@ -69,7 +69,7 @@ export default function DashboardHome() {
             emoji="📚"
           />
         </Grid>
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
             label="Total Fee Dues"
             value={`Rs. ${stats.totalDues.toLocaleString()}`}
@@ -79,7 +79,7 @@ export default function DashboardHome() {
             emoji="💰"
           />
         </Grid>
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <StatCard
             label="Attendance Today"
             value="95%"
@@ -92,7 +92,7 @@ export default function DashboardHome() {
         </Grid>
 
         {/* Welcome Card */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <DashboardCard
             title="Welcome to Shining Star"
             hover={false}
