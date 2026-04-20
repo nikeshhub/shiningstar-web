@@ -22,11 +22,14 @@ import {
   Assessment as AssessmentIcon,
 } from '@mui/icons-material';
 import { Button, Toast } from '../../components/common';
-import { progressReportAPI, classAPI, studentAPI } from '../../services/api';
+import { progressReportAPI, classAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const ACADEMIC_YEARS = ['2080-2081', '2081-2082', '2082-2083'];
 
 export default function ProgressReportList() {
+  const { user } = useAuth();
+  const isTeacher = user?.role === 'Teacher';
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedYear, setSelectedYear] = useState('2081-2082');
@@ -38,7 +41,7 @@ export default function ProgressReportList() {
 
   useEffect(() => {
     loadClasses();
-  }, []);
+  }, [isTeacher]);
 
   useEffect(() => {
     if (selectedClass) {
@@ -51,7 +54,12 @@ export default function ProgressReportList() {
     try {
       const response = await classAPI.getAll({ status: 'Active' });
       if (response.data.success) {
-        setClasses(response.data.data);
+        const classList = response.data.data || [];
+        setClasses(classList);
+
+        if (isTeacher) {
+          setSelectedClass(classList[0]?._id || '');
+        }
       }
     } catch (error) {
       console.error('Error loading classes:', error);
@@ -91,7 +99,11 @@ export default function ProgressReportList() {
 
   const handleBulkGenerate = async () => {
     if (!selectedClass || !selectedYear) {
-      setToast({ open: true, message: 'Please select class and academic year', severity: 'warning' });
+      setToast({
+        open: true,
+        message: isTeacher ? 'No class teacher assignment found' : 'Please select class and academic year',
+        severity: 'warning',
+      });
       return;
     }
 
@@ -181,22 +193,35 @@ export default function ProgressReportList() {
       {/* Filters */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={3} alignItems="center">
-          <Grid size={{ xs: 12, md: 4 }}>
-            <FormControl fullWidth>
-              <InputLabel>Select Class</InputLabel>
-              <Select
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                label="Select Class"
-              >
-                {classes.map((cls) => (
-                  <MenuItem key={cls._id} value={cls._id}>
-                    {cls.className}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+          {isTeacher ? (
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Box sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <Typography variant="caption" color="text.secondary">
+                  My Class
+                </Typography>
+                <Typography sx={{ fontWeight: 600 }}>
+                  {classes[0]?.className || 'No class teacher assignment found'}
+                </Typography>
+              </Box>
+            </Grid>
+          ) : (
+            <Grid size={{ xs: 12, md: 4 }}>
+              <FormControl fullWidth>
+                <InputLabel>Select Class</InputLabel>
+                <Select
+                  value={selectedClass}
+                  onChange={(e) => setSelectedClass(e.target.value)}
+                  label="Select Class"
+                >
+                  {classes.map((cls) => (
+                    <MenuItem key={cls._id} value={cls._id}>
+                      {cls.className}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
 
           <Grid size={{ xs: 12, md: 4 }}>
             <FormControl fullWidth>

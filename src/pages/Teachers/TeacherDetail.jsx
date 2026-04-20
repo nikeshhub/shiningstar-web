@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Paper, Table as MuiTable, TableBody, TableCell, TableContainer, TableHead, TableRow, Grid, TextField, MenuItem } from '@mui/material';
 import { Edit as EditIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, DetailPage, DetailSection, DetailRow, StatusChip, Table } from '../../components/common';
+import { Button, DetailPage, DetailSection, DetailRow, StatusChip, Table, BSDatePicker } from '../../components/common';
 import { teacherAPI, timetableAPI, teacherAttendanceAPI } from '../../services/api';
+import { formatBSDate } from '../../utils/nepaliDate';
 
 export default function TeacherDetail() {
   const { id } = useParams();
@@ -146,7 +147,7 @@ export default function TeacherDetail() {
           <DetailRow label="Status" value={<StatusChip status={teacher.status} />} />
           <DetailRow label="Email" value={teacher.email} />
           <DetailRow label="Phone" value={teacher.phone} />
-          <DetailRow label="Date of Birth" value={teacher.dateOfBirth?.split('T')[0] || '-'} />
+          <DetailRow label="Date of Birth" value={formatBSDate(teacher.dateOfBirth)} />
           <DetailRow label="Gender" value={teacher.gender || '-'} />
           <DetailRow label="Address" value={teacher.address || '-'} colSpan={12} />
         </DetailSection>
@@ -160,7 +161,7 @@ export default function TeacherDetail() {
           />
           <DetailRow
             label="Join Date"
-            value={teacher.joinDate?.split('T')[0] || '-'}
+            value={formatBSDate(teacher.joinDate)}
           />
         </DetailSection>
 
@@ -247,23 +248,19 @@ export default function TeacherDetail() {
                 </TextField>
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  fullWidth
-                  label="From"
-                  type="date"
+                <BSDatePicker
+                  label="From (BS)"
+                  name="from"
                   value={attendanceFilters.from}
                   onChange={(e) => setAttendanceFilters({ ...attendanceFilters, from: e.target.value })}
-                  InputLabelProps={{ shrink: true }}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  fullWidth
-                  label="To"
-                  type="date"
+                <BSDatePicker
+                  label="To (BS)"
+                  name="to"
                   value={attendanceFilters.to}
                   onChange={(e) => setAttendanceFilters({ ...attendanceFilters, to: e.target.value })}
-                  InputLabelProps={{ shrink: true }}
                 />
               </Grid>
               <Grid size={12}>
@@ -289,7 +286,7 @@ export default function TeacherDetail() {
               <TableBody>
                 {attendanceRecords.map((record) => (
                   <TableRow key={record._id} hover>
-                    <TableCell>{new Date(record.date).toLocaleDateString('en-GB')}</TableCell>
+                    <TableCell>{formatBSDate(record.date)}</TableCell>
                     <TableCell>{record.status}</TableCell>
                     <TableCell>{record.inTime ? new Date(record.inTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '-'}</TableCell>
                     <TableCell>{record.outTime ? new Date(record.outTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '-'}</TableCell>
