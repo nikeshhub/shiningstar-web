@@ -113,18 +113,6 @@ export default function FamilyList() {
       ),
     },
     {
-      field: 'billingType',
-      headerName: 'Billing',
-      width: 120,
-      renderCell: (row) => (
-        <Chip
-          label={row.billingType}
-          size="small"
-          color={row.billingType === 'Family' ? 'success' : 'default'}
-        />
-      ),
-    },
-    {
       field: 'familyFeeBalance',
       headerName: 'Balance',
       width: 150,
@@ -281,10 +269,10 @@ export default function FamilyList() {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Family Billing
+                    Families with Dues
                   </Typography>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: 'secondary.main' }}>
-                    {families.filter((f) => f.billingType === 'Family').length}
+                    {families.filter((f) => (f.familyFeeBalance?.totalDue || 0) > 0).length}
                   </Typography>
                 </Box>
                 <BalanceIcon sx={{ fontSize: 40, color: 'secondary.main', opacity: 0.3 }} />
