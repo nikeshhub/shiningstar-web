@@ -15,3 +15,6 @@ export { default as FormField } from './FormField';
 export { default as FormSelect } from './FormSelect';
 export { default as FormMultiSelect } from './FormMultiSelect';
 export { default as RoleBasedAccess, useHasRole, useHasPermission, useUserRole, withRoleAccess } from './RoleBasedAccess';
+export { default as AutocompleteSelect } from './AutocompleteSelect';
+export { default as FormAutocompleteSelect } from './FormAutocompleteSelect';
+export { default as BSDatePicker } from './BSDatePicker';
