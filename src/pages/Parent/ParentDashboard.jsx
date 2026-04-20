@@ -16,13 +16,14 @@ import {
   AccountBalance as FeeIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import { studentAPI } from '../../services/api';
+import { familyAPI, studentAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 
 export default function ParentDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
+  const [feeSummary, setFeeSummary] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,9 +36,15 @@ export default function ParentDashboard() {
       // Get students belonging to this family
       const familyId = user.profile;
       const response = await studentAPI.getAll({ family: familyId });
+      const summaryResponse = familyId
+        ? await familyAPI.getFeeSummary(familyId)
+        : null;
 
       if (response.data.success) {
         setStudents(response.data.data);
+      }
+      if (summaryResponse?.data?.success) {
+        setFeeSummary(summaryResponse.data.data?.combinedBalance || null);
       }
     } catch (error) {
       console.error('Error loading children:', error);
@@ -110,6 +117,26 @@ export default function ParentDashboard() {
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Active
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Card sx={{ boxShadow: 2 }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Avatar sx={{ bgcolor: (feeSummary?.netBalance || 0) > 0 ? 'error.main' : 'success.main' }}>
+                  <FeeIcon />
+                </Avatar>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    Rs. {Math.abs(feeSummary?.netBalance || 0).toLocaleString()}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {(feeSummary?.netBalance || 0) > 0 ? 'Due' : 'Advance/Clear'}
                   </Typography>
                 </Box>
               </Box>
