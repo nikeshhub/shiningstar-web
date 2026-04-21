@@ -2,7 +2,7 @@ const trimTrailingSlash = (value) => String(value || "").replace(/\/+$/, "");
 
 export const API_BASE_URL = trimTrailingSlash(
   process.env.REACT_APP_API_BASE_URL ||
-    "https://shiningstar-api.vercel.app//api",
+    "https://shiningstar-api.vercel.app/api",
 );
 console.log(process.env.REACT_APP_API_BASE_URL);
 
