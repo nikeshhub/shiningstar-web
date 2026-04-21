@@ -78,7 +78,7 @@ export default function ModernHero() {
 
       <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
         <Grid container spacing={4} alignItems="center">
-          <Grid item xs={12} md={6} order={{ xs: 1, md: 1 }}>
+          <Grid size={{ xs: 12, md: 6 }} order={{ xs: 1, md: 1 }}>
             {/* Badge */}
             <Box
               sx={{
@@ -258,7 +258,7 @@ export default function ModernHero() {
             </Box>
           </Grid>
 
-          <Grid item xs={12} md={6} order={{ xs: 2, md: 2 }}>
+          <Grid size={{ xs: 12, md: 6 }} order={{ xs: 2, md: 2 }}>
             {/* Hero Image/Illustration */}
             <Box
               sx={{

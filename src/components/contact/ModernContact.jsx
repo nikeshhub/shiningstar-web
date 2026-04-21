@@ -127,7 +127,7 @@ export default function ModernContact() {
         <Grid container spacing={{ xs: 3, md: 4 }}>
           {/* Contact Info Cards */}
           {contactInfo.map((info, index) => (
-            <Grid item xs={6} sm={6} md={3} key={index}>
+            <Grid size={{ xs: 6, sm: 6, md: 3 }} key={index}>
               <Paper
                 elevation={0}
                 sx={{
@@ -180,7 +180,7 @@ export default function ModernContact() {
           ))}
 
           {/* Contact Form */}
-          <Grid item xs={12} md={7}>
+          <Grid size={{ xs: 12, md: 7 }}>
             <Paper
               elevation={0}
               sx={{
@@ -199,7 +199,7 @@ export default function ModernContact() {
 
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       fullWidth
                       label="Your Name"
@@ -222,7 +222,7 @@ export default function ModernContact() {
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       fullWidth
                       label="Email Address"
@@ -246,7 +246,7 @@ export default function ModernContact() {
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       fullWidth
                       label="Phone Number"
@@ -268,7 +268,7 @@ export default function ModernContact() {
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       fullWidth
                       label="Subject"
@@ -291,7 +291,7 @@ export default function ModernContact() {
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <TextField
                       fullWidth
                       label="Your Message"
@@ -316,7 +316,7 @@ export default function ModernContact() {
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <Button
                       type="submit"
                       size="large"
@@ -343,7 +343,7 @@ export default function ModernContact() {
           </Grid>
 
           {/* Map */}
-          <Grid item xs={12} md={5}>
+          <Grid size={{ xs: 12, md: 5 }}>
             <Paper
               elevation={0}
               sx={{

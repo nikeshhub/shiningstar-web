@@ -1,19 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
-// Components
-import SplashScreen from "./components/SplashScreen/SplashScreen";
+// Context
+import { AuthProvider } from "./context/AuthContext";
 
-// Static Pages
+// Components
+import ProtectedRoute from "./components/ProtectedRoute";
+
+// Layout
+import Dashboard from "./components/layout/Dashboard";
+import ParentLayout from "./components/layout/ParentLayout";
+import SuperAdminLayout from "./components/layout/SuperAdminLayout";
+
+// Pages
 import { Homepage } from "./pages/Homepage/homepage";
 import About from "./pages/About/About";
 import Academics from "./pages/Academics/Academics";
 import Admissions from "./pages/Admissions/Admissions";
 import Gallery from "./pages/Gallery/Gallery";
 import Contact from "./pages/Contact/Contact";
+import Login from "./pages/Auth/Login";
 import NotFound from "./pages/NotFound/NotFound";
+import {
+  dashboardRouteDefinitions,
+  parentRouteDefinitions,
+  superAdminRouteDefinitions,
+  renderRouteElement,
+} from "./config/dashboardConfig";
 
 const theme = createTheme({
   palette: {
@@ -111,28 +126,94 @@ const theme = createTheme({
 });
 
 function App() {
-  const [showSplash, setShowSplash] = useState(true);
-
-  const handleLoadComplete = () => {
-    setShowSplash(false);
-  };
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {showSplash && <SplashScreen onLoadComplete={handleLoadComplete} />}
-      <Routes>
-        {/* Static Public Routes */}
-        <Route path="/" element={<Homepage />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/academics" element={<Academics />} />
-        <Route path="/admissions" element={<Admissions />} />
-        <Route path="/gallery" element={<Gallery />} />
-        <Route path="/contact" element={<Contact />} />
+      <AuthProvider>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Homepage />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/academics" element={<Academics />} />
+          <Route path="/admissions" element={<Admissions />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Login />} />
 
-        {/* 404 Not Found - Catch all */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          {/* Protected Dashboard Routes - Admin & Teacher Access */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['Admin', 'Teacher']}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          >
+            {dashboardRouteDefinitions.map((route) => {
+              const Component = route.element;
+              const element = (
+                <ProtectedRoute allowedRoles={route.allowedRoles}>
+                  {renderRouteElement(Component)}
+                </ProtectedRoute>
+              );
+
+              if (route.index) {
+                return <Route key="dashboard-index" index element={element} />;
+              }
+
+              return <Route key={route.path} path={route.path} element={element} />;
+            })}
+          </Route>
+
+          {/* Parent Portal Routes - Parent Access Only */}
+          <Route
+            path="/parent"
+            element={
+              <ProtectedRoute allowedRoles={['Parent']}>
+                <ParentLayout />
+              </ProtectedRoute>
+            }
+          >
+            {parentRouteDefinitions.map((route) => {
+              const Component = route.element;
+
+              if (route.index) {
+                return <Route key="parent-index" index element={renderRouteElement(Component)} />;
+              }
+
+              return <Route key={route.path} path={route.path} element={renderRouteElement(Component)} />;
+            })}
+          </Route>
+
+          {/* SuperAdmin Portal */}
+          <Route
+            path="/superadmin"
+            element={
+              <ProtectedRoute allowedRoles={['SuperAdmin']}>
+                <SuperAdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            {superAdminRouteDefinitions.map((route) => {
+              const Component = route.element;
+              const element = (
+                <ProtectedRoute allowedRoles={['SuperAdmin']}>
+                  {renderRouteElement(Component)}
+                </ProtectedRoute>
+              );
+
+              if (route.index) {
+                return <Route key="superadmin-index" index element={element} />;
+              }
+
+              return <Route key={route.path} path={route.path} element={element} />;
+            })}
+          </Route>
+
+          {/* 404 Not Found - Catch all */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

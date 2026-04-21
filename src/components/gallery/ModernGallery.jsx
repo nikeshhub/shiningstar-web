@@ -201,10 +201,7 @@ export default function ModernGallery() {
         <Grid container spacing={2}>
           {filteredImages.map((image, index) => (
             <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
+              size={{ xs: 12, sm: 6, md: 4 }}
               key={image.id}
               sx={{
                 animation: `fadeInUp 0.6s ease ${index * 0.1}s both`,

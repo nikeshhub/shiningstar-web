@@ -11,6 +11,9 @@ import {
   Email as EmailIcon,
   ArrowUpward as ArrowUpIcon,
 } from '@mui/icons-material';
+import { getCurrentBSDateParts } from '../../utils/nepaliDate';
+
+const currentBSYear = getCurrentBSDateParts()?.year || '';
 
 export default function ModernFooter() {
   const quickLinks = [
@@ -65,7 +68,7 @@ export default function ModernFooter() {
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
         <Grid container spacing={4}>
           {/* About Section */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ mb: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Box
@@ -126,7 +129,7 @@ export default function ModernFooter() {
           </Grid>
 
           {/* Quick Links */}
-          <Grid item xs={6} md={2}>
+          <Grid size={{ xs: 6, md: 2 }}>
             <Typography
               variant="h6"
               sx={{
@@ -170,7 +173,7 @@ export default function ModernFooter() {
           </Grid>
 
           {/* Programs */}
-          <Grid item xs={6} md={3}>
+          <Grid size={{ xs: 6, md: 3 }}>
             <Typography
               variant="h6"
               sx={{
@@ -208,7 +211,7 @@ export default function ModernFooter() {
           </Grid>
 
           {/* Contact Info */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Typography
               variant="h6"
               sx={{
@@ -266,7 +269,7 @@ export default function ModernFooter() {
           }}
         >
           <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-            © {new Date().getFullYear()} Shining Star English School. All rights reserved.
+            © {currentBSYear} Shining Star English School. All rights reserved.
           </Typography>
 
           <Box sx={{ display: 'flex', gap: 3 }}>

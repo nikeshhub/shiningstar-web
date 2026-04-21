@@ -150,11 +150,7 @@ export default function WhyChooseUs() {
           >
             {features.map((feature, index) => (
               <Grid
-                item
-                xs={4}
-                sm={6}
-                md={4}
-                lg={4}
+                size={{ xs: 4, sm: 6, md: 4, lg: 4 }}
                 key={index}
                 sx={{ display: "flex" }}
               >
@@ -259,7 +255,7 @@ export default function WhyChooseUs() {
             spacing={{ xs: 3, sm: 4 }}
             sx={{ position: "relative", zIndex: 1 }}
           >
-            <Grid item xs={6} sm={6} md={3}>
+            <Grid size={{ xs: 6, sm: 6, md: 3 }}>
               <Box sx={{ textAlign: "center" }}>
                 <Typography
                   variant="h2"
@@ -284,7 +280,7 @@ export default function WhyChooseUs() {
                 </Typography>
               </Box>
             </Grid>
-            <Grid item xs={6} sm={6} md={3}>
+            <Grid size={{ xs: 6, sm: 6, md: 3 }}>
               <Box sx={{ textAlign: "center" }}>
                 <Typography
                   variant="h2"
@@ -309,7 +305,7 @@ export default function WhyChooseUs() {
                 </Typography>
               </Box>
             </Grid>
-            <Grid item xs={6} sm={6} md={3}>
+            <Grid size={{ xs: 6, sm: 6, md: 3 }}>
               <Box sx={{ textAlign: "center" }}>
                 <Typography
                   variant="h2"
@@ -334,7 +330,7 @@ export default function WhyChooseUs() {
                 </Typography>
               </Box>
             </Grid>
-            <Grid item xs={6} sm={6} md={3}>
+            <Grid size={{ xs: 6, sm: 6, md: 3 }}>
               <Box sx={{ textAlign: "center" }}>
                 <Typography
                   variant="h2"

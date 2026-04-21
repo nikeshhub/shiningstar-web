@@ -49,7 +49,7 @@ const Hero = () => {
             <div className="hero__badge-dot"></div>
           </div>
           <div className="hero__badge-content">
-            <div className="hero__badge-label">Est. 1994 (2051 BS)</div>
+            <div className="hero__badge-label">Est. 2051 BS</div>
             <div className="hero__badge-title">30+ Years</div>
           </div>
         </div>
