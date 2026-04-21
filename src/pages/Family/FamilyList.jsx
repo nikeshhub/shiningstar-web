@@ -21,6 +21,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { familyAPI } from '../../services/api';
 import { Table, Toast, Dialog } from '../../components/common';
+import { PageHeader } from '../../components/dashboard';
 
 export default function FamilyList() {
   const navigate = useNavigate();
@@ -188,24 +189,25 @@ export default function FamilyList() {
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 1 }}>
-            Family Management
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Manage families for sibling grouping and combined fee billing
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate('/dashboard/families/create')}
-        >
-          Create Family
-        </Button>
-      </Box>
+      <PageHeader
+        title="<em>Family</em> Management"
+        subtitle="Manage families for sibling grouping and combined fee billing"
+        action={
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/dashboard/families/create')}
+            sx={{
+              textTransform: 'none',
+              fontWeight: 600,
+              borderRadius: '8px',
+              px: 2,
+            }}
+          >
+            Create Family
+          </Button>
+        }
+      />
 
       {/* Statistics Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>

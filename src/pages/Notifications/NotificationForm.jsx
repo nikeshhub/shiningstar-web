@@ -29,6 +29,7 @@ import {
   notificationAPI,
   studentAPI,
 } from '../../services/api';
+import { PageHeader } from '../../components/dashboard';
 import {
   adToBSDateTimeParts,
   combineBSDateTime,
@@ -269,14 +270,10 @@ export default function NotificationForm({ notificationData, onSuccess, onCancel
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary', mb: 1 }}>
-          {notificationData ? 'Edit Notification' : 'Create Notification'}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Configure the audience and content. SMS delivery is sent from the backend through Aakash SMS.
-        </Typography>
-      </Box>
+      <PageHeader
+        title={notificationData ? 'Edit <em>Notification</em>' : 'Create <em>Notification</em>'}
+        subtitle="Configure the audience and content. SMS delivery is sent from the backend through Aakash SMS."
+      />
 
       {isLocked && (
         <Alert severity="warning" sx={{ mb: 3 }}>

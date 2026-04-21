@@ -31,6 +31,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Toast, Select, BSDatePicker } from '../../components/common';
 import { attendanceAPI, classAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { PageHeader } from '../../components/dashboard';
 import {
   formatBSDateWithDay,
   getBSDateParts,
@@ -195,23 +196,24 @@ export default function AttendanceList() {
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 1 }}>
-            Attendance Records
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            View and analyze student attendance by class, month, and year
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          onClick={() => navigate('/dashboard/attendance/mark')}
-        >
-          Mark Attendance
-        </Button>
-      </Box>
+      <PageHeader
+        title="<em>Attendance</em> Records"
+        subtitle="View and analyze student attendance by class, month, and year"
+        action={
+          <Button
+            variant="contained"
+            onClick={() => navigate('/dashboard/attendance/mark')}
+            sx={{
+              textTransform: 'none',
+              fontWeight: 600,
+              borderRadius: '8px',
+              px: 2,
+            }}
+          >
+            Mark Attendance
+          </Button>
+        }
+      />
 
       {/* Tabs */}
       <Card sx={{ mb: 3, boxShadow: 2, borderRadius: 2 }}>

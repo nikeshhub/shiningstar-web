@@ -17,6 +17,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Toast, Select } from '../../components/common';
 import { familyAPI } from '../../services/api';
+import { PageHeader } from '../../components/dashboard';
 
 const RELATION_OPTIONS = ['Father', 'Mother', 'Guardian'];
 const STATUS_OPTIONS = ['Active', 'Inactive'];
@@ -129,23 +130,12 @@ export default function FamilyForm() {
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Button
-          variant="text"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/dashboard/families')}
-          sx={{ mb: 2, color: 'text.secondary', '&:hover': { bgcolor: alpha('#1976d2', 0.05) } }}
-        >
-          Back to Families
-        </Button>
-        <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 1 }}>
-          {isEdit ? 'Edit Family' : 'Create New Family'}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {isEdit ? 'Update family information' : 'Add a new family for sibling grouping'}
-        </Typography>
-      </Box>
+      <PageHeader
+        title={isEdit ? 'Edit <em>Family</em>' : 'Create New <em>Family</em>'}
+        subtitle={isEdit ? 'Update family information' : 'Add a new family for sibling grouping'}
+        backTo="/dashboard/families"
+        backLabel="Back to Families"
+      />
 
       <form onSubmit={handleSubmit}>
         {/* Basic Information */}
