@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8000/api';
+import { API_BASE_URL } from '../config/env';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -28,7 +27,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (error.response && error.response.status === 401 && !error.config?.skipAuthRedirect) {
       // Token expired or invalid - clear storage and redirect to login
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -145,6 +144,9 @@ export const notificationAPI = {
 
 // Auth / system control APIs
 export const authAPI = {
+  login: (data) => api.post('/auth/login', data, { skipAuthRedirect: true }),
+  register: (data) => api.post('/auth/register', data, { skipAuthRedirect: true }),
+  profile: () => api.get('/auth/profile'),
   getSystemOverview: () => api.get('/auth/system-overview'),
   getProvisionTargets: (params) => api.get('/auth/provision-targets', { params }),
   provisionAccount: (data) => api.post('/auth/provision-account', data),
