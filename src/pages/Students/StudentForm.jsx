@@ -25,6 +25,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button, FormField, FormSelect, FormAutocompleteSelect, Toast } from '../../components/common';
 import { studentAPI, classAPI, familyAPI } from '../../services/api';
 import { adToBSDate, todayBSDate } from '../../utils/nepaliDate';
+import { resolveAssetUrl } from '../../config/env';
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
 const studentSchema = z.object({
@@ -124,10 +125,10 @@ export default function StudentForm() {
             remarks: s.remarks || '',
           });
           if (s.photo) {
-            setPhotoPreview(s.photo.startsWith('http') ? s.photo : `http://localhost:8000${s.photo}`);
+            setPhotoPreview(resolveAssetUrl(s.photo));
           }
           if (s.birthCertificate) {
-            setBirthCertificatePreview(s.birthCertificate.startsWith('http') ? s.birthCertificate : `http://localhost:8000${s.birthCertificate}`);
+            setBirthCertificatePreview(resolveAssetUrl(s.birthCertificate));
           }
         }
       }).catch(err => console.error(err));

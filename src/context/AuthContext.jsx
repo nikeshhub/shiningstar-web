@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import { authAPI } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -16,9 +16,6 @@ export const AuthProvider = ({ children }) => {
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
-
-      // Set default authorization header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
     }
 
     setLoading(false);
@@ -26,10 +23,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (identifier, password) => {
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/login', {
-        identifier, // Can be email or phone number
-        password,
-      });
+      const response = await authAPI.login({ identifier, password });
 
       if (response.data.success) {
         const { user: userData, token: userToken } = response.data.data;
@@ -41,9 +35,6 @@ export const AuthProvider = ({ children }) => {
         // Update state
         setToken(userToken);
         setUser(userData);
-
-        // Set default authorization header
-        axios.defaults.headers.common['Authorization'] = `Bearer ${userToken}`;
 
         return { success: true, user: userData };
       } else {
@@ -74,7 +65,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/register', userData);
+      const response = await authAPI.register(userData);
 
       if (response.data.success) {
         return { success: true, user: response.data.data.user };
@@ -97,9 +88,6 @@ export const AuthProvider = ({ children }) => {
     // Clear state
     setToken(null);
     setUser(null);
-
-    // Remove authorization header
-    delete axios.defaults.headers.common['Authorization'];
   };
 
   const updateUser = (updatedUser) => {
