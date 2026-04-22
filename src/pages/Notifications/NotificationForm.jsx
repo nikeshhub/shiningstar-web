@@ -28,7 +28,7 @@ import {
   classAPI,
   notificationAPI,
   studentAPI,
-} from '../../services/api';
+} from '../../hooks/reactQueryApi';
 import { PageHeader } from '../../components/dashboard';
 import {
   adToBSDateTimeParts,

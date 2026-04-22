@@ -18,7 +18,7 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { Search as SearchIcon } from '@mui/icons-material';
-import { studentAPI } from '../../services/api';
+import { studentAPI } from '../../hooks/reactQueryApi';
 
 export default function LinkStudentDialog({ open, onClose, onLink, currentFamilyId }) {
   const [students, setStudents] = useState([]);

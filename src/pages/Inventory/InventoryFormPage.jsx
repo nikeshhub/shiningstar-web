@@ -1,25 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components/common';
-import { inventoryAPI } from '../../services/api';
+import { useInventoryItem } from '../../hooks';
 import InventoryForm from './InventoryForm';
 
 export default function InventoryFormPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const [itemData, setItemData] = useState(null);
-
-  useEffect(() => {
-    if (!isEdit) return;
-    inventoryAPI.getById(id)
-      .then((res) => {
-        if (res.data.success) setItemData(res.data.data);
-      })
-      .catch((err) => console.error('Error loading item:', err));
-  }, [id, isEdit]);
+  const { data: itemData = null } = useInventoryItem(id, { enabled: isEdit });
 
   const handleSuccess = () => {
     navigate('/dashboard/inventory');

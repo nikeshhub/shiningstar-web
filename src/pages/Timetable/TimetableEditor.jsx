@@ -15,7 +15,7 @@ import {
   Chip,
 } from '@mui/material';
 import { Button, Select, Toast } from '../../components/common';
-import { classAPI, subjectAPI, teacherAPI, timetableAPI } from '../../services/api';
+import { classAPI, subjectAPI, teacherAPI, timetableAPI } from '../../hooks/reactQueryApi';
 import { useAuth } from '../../context/AuthContext';
 
 const PERIODS = [1, 2, 3, 4, 5, 6, 7];

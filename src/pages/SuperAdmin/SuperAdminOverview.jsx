@@ -26,7 +26,7 @@ import {
 import { Button, Select, Toast } from '../../components/common';
 import { ROLE_PERMISSIONS, ROLES } from '../../config/permissions';
 import { useAuth } from '../../context/AuthContext';
-import { authAPI } from '../../services/api';
+import { authAPI } from '../../hooks/reactQueryApi';
 import { formatBSDate } from '../../utils/nepaliDate';
 
 const ROLE_OPTIONS = [

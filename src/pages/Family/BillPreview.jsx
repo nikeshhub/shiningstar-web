@@ -22,7 +22,7 @@ import {
   Print as PrintIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { feeAPI } from '../../services/api';
+import { feeAPI } from '../../hooks/reactQueryApi';
 import { Toast } from '../../components/common';
 import { formatBSDate, formatBSDateShort } from '../../utils/nepaliDate';
 

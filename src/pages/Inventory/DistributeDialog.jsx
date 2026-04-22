@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Grid, Typography, Divider, Alert } from '@mui/material';
 import { Input, Select, Dialog, Button, Toast, FormAutocompleteSelect } from '../../components/common';
-import { inventoryAPI, studentAPI } from '../../services/api';
+import { inventoryAPI, studentAPI } from '../../hooks/reactQueryApi';
 
 export default function DistributeDialog({ open, onClose, item, onSuccess }) {
   const [students, setStudents] = useState([]);

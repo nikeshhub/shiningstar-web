@@ -19,7 +19,7 @@ import {
   AccountBalance as BalanceIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { familyAPI } from '../../services/api';
+import { familyAPI } from '../../hooks/reactQueryApi';
 import { Table, Toast, Dialog } from '../../components/common';
 import { PageHeader } from '../../components/dashboard';
 

@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Dialog, Toast, StatusChip } from '../../components/common';
-import { teacherAPI } from '../../services/api';
+import { teacherAPI } from '../../hooks/reactQueryApi';
 
 export default function TeacherList() {
   const navigate = useNavigate();

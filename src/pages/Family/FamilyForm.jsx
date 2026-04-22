@@ -16,7 +16,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Toast, Select } from '../../components/common';
-import { familyAPI } from '../../services/api';
+import { familyAPI } from '../../hooks/reactQueryApi';
 import { PageHeader } from '../../components/dashboard';
 
 const RELATION_OPTIONS = ['Father', 'Mother', 'Guardian'];

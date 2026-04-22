@@ -21,7 +21,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Button, Toast } from '../../components/common';
 import { DashboardCard, PageHeader, StatCard } from '../../components/dashboard';
-import { authAPI } from '../../services/api';
+import { authAPI } from '../../hooks/reactQueryApi';
 import { formatBSDate } from '../../utils/nepaliDate';
 
 const formatDateTime = (value) => {

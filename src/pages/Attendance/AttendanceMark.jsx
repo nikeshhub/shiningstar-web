@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { Save as SaveIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { classAPI, attendanceAPI, studentAPI } from '../../services/api';
+import { classAPI, attendanceAPI, studentAPI } from '../../hooks/reactQueryApi';
 import { Toast, Select, BSDatePicker } from '../../components/common';
 import { todayBSDate } from '../../utils/nepaliDate';
 import { useAuth } from '../../context/AuthContext';

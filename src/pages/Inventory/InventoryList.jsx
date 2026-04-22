@@ -25,7 +25,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Card, Select } from '../../components/common';
-import { inventoryAPI } from '../../services/api';
+import { inventoryAPI } from '../../hooks/reactQueryApi';
 import { formatBSDate } from '../../utils/nepaliDate';
 import DistributeDialog from './DistributeDialog';
 import DistributeBookSetDialog from './DistributeBookSetDialog';
