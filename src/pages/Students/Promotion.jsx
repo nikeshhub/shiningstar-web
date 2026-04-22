@@ -19,7 +19,7 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { Button, Toast, Select, Input } from '../../components/common';
-import { studentAPI, classAPI } from '../../services/api';
+import { studentAPI, classAPI } from '../../hooks/reactQueryApi';
 
 const CURRENT_YEAR = '2081-2082';
 const NEXT_YEAR = '2082-2083';

@@ -14,7 +14,7 @@ import {
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Toast, Select } from "../../components/common";
-import { subjectAPI } from "../../services/api";
+import { useCreateSubject, useSubject, useUpdateSubject } from "../../hooks";
 
 const SUBJECT_TYPES = ["Major", "Minor"];
 
@@ -35,18 +35,37 @@ export default function SubjectForm() {
     isOptional: false,
   });
 
-  const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({
     open: false,
     message: "",
     severity: "info",
   });
 
+  const {
+    data: subjectData,
+    isLoading: isSubjectLoading,
+    error: subjectError,
+  } = useSubject(id);
+  const createSubjectMutation = useCreateSubject();
+  const updateSubjectMutation = useUpdateSubject();
+  const isSubmitting =
+    createSubjectMutation.isPending || updateSubjectMutation.isPending;
+
   useEffect(() => {
-    if (isEdit) {
-      loadSubject();
+    if (subjectData) {
+      setFormData(subjectData);
     }
-  }, [id]);
+  }, [subjectData]);
+
+  useEffect(() => {
+    if (subjectError) {
+      setToast({
+        open: true,
+        message: subjectError.message || "Failed to load subject",
+        severity: "error",
+      });
+    }
+  }, [subjectError]);
 
   useEffect(() => {
     const total =
@@ -55,22 +74,6 @@ export default function SubjectForm() {
       setFormData((prev) => ({ ...prev, fullMarks: total }));
     }
   }, [formData.writtenMarks, formData.practicalMarks]);
-
-  const loadSubject = async () => {
-    try {
-      const response = await subjectAPI.getById(id);
-      if (response.data.success) {
-        setFormData(response.data.data);
-      }
-    } catch (error) {
-      console.error("Error loading subject:", error);
-      setToast({
-        open: true,
-        message: "Failed to load subject",
-        severity: "error",
-      });
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value, checked, type } = e.target;
@@ -101,30 +104,26 @@ export default function SubjectForm() {
     }
 
     try {
-      setLoading(true);
-      const response = isEdit
-        ? await subjectAPI.update(id, formData)
-        : await subjectAPI.create(formData);
-
-      if (response.data.success) {
-        setToast({
-          open: true,
-          message: `Subject ${isEdit ? "updated" : "created"} successfully!`,
-          severity: "success",
-        });
-        setTimeout(() => navigate("/dashboard/subjects"), 1500);
+      if (isEdit) {
+        await updateSubjectMutation.mutateAsync({ id, data: formData });
+      } else {
+        await createSubjectMutation.mutateAsync(formData);
       }
+      setToast({
+        open: true,
+        message: `Subject ${isEdit ? "updated" : "created"} successfully!`,
+        severity: "success",
+      });
+      setTimeout(() => navigate("/dashboard/subjects"), 1500);
     } catch (error) {
       console.error("Error saving subject:", error);
       setToast({
         open: true,
         message:
-          error.response?.data?.message ||
+          error.message ||
           `Failed to ${isEdit ? "update" : "create"} subject`,
         severity: "error",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -386,7 +385,7 @@ export default function SubjectForm() {
             <Button
               variant="outlined"
               onClick={() => navigate("/dashboard/subjects")}
-              disabled={loading}
+              disabled={isSubmitting || (isEdit && isSubjectLoading)}
               sx={{ minWidth: 120 }}
             >
               Cancel
@@ -394,7 +393,8 @@ export default function SubjectForm() {
             <Button
               type="submit"
               variant="contained"
-              loading={loading}
+              loading={isSubmitting}
+              disabled={isEdit && isSubjectLoading}
               sx={{ minWidth: 160 }}
             >
               {isEdit ? "Update Subject" : "Create Subject"}

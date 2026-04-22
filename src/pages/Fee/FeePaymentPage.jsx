@@ -12,7 +12,7 @@ import {
 import { ArrowBack as ArrowBackIcon, People as PeopleIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components/common';
-import { feeAPI, familyAPI } from '../../services/api';
+import { feeAPI, familyAPI } from '../../hooks/reactQueryApi';
 
 export default function FeePaymentPage() {
   const navigate = useNavigate();

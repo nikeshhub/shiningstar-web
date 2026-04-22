@@ -18,7 +18,7 @@ import { Button, Input, Select, Toast } from '../../components/common';
 import { DashboardCard, PageHeader } from '../../components/dashboard';
 import { ROLES } from '../../config/permissions';
 import { useAuth } from '../../context/AuthContext';
-import { authAPI } from '../../services/api';
+import { authAPI } from '../../hooks/reactQueryApi';
 import { formatBSDate } from '../../utils/nepaliDate';
 
 const ROLE_OPTIONS = [

@@ -21,7 +21,7 @@ import {
   AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { feeAPI } from '../../services/api';
+import { feeAPI } from '../../hooks/reactQueryApi';
 import { Table } from '../../components/common';
 import { todayBSDate } from '../../utils/nepaliDate';
 

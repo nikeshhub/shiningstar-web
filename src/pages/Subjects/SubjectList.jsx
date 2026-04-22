@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -12,37 +12,27 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Dialog, Toast } from '../../components/common';
-import { subjectAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useSubjects, useDeleteSubject } from '../../hooks';
 
 export default function SubjectList() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [subjects, setSubjects] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [subjectToDelete, setSubjectToDelete] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
   const canManageSubjects = user?.role === 'Admin';
 
-  useEffect(() => {
-    loadSubjects();
-  }, []);
+  // React Query hooks
+  const { data: subjects = [], isLoading: loading, error } = useSubjects();
+  const deleteSubjectMutation = useDeleteSubject();
 
-  const loadSubjects = async () => {
-    try {
-      setLoading(true);
-      const response = await subjectAPI.getAll();
-      if (response.data.success) {
-        setSubjects(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error loading subjects:', error);
+  // Show error toast if query fails
+  React.useEffect(() => {
+    if (error) {
       setToast({ open: true, message: 'Failed to load subjects.', severity: 'error' });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error]);
 
   const handleAdd = () => {
     navigate('/dashboard/subjects/add');
@@ -54,19 +44,18 @@ export default function SubjectList() {
 
   const handleDelete = async () => {
     try {
-      const response = await subjectAPI.delete(subjectToDelete._id);
-      if (response.data.success) {
-        setToast({ open: true, message: 'Subject deleted successfully!', severity: 'success' });
-        setDeleteDialog(false);
-        setSubjectToDelete(null);
-        loadSubjects();
-      } else {
-        setToast({ open: true, message: response.data.message, severity: 'error' });
-        setDeleteDialog(false);
-      }
+      await deleteSubjectMutation.mutateAsync(subjectToDelete._id);
+      setToast({ open: true, message: 'Subject deleted successfully!', severity: 'success' });
+      setDeleteDialog(false);
+      setSubjectToDelete(null);
     } catch (error) {
       console.error('Error deleting subject:', error);
-      setToast({ open: true, message: 'Failed to delete subject', severity: 'error' });
+      setToast({
+        open: true,
+        message: error.message || 'Failed to delete subject',
+        severity: 'error'
+      });
+      setDeleteDialog(false);
     }
   };
 

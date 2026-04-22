@@ -24,7 +24,7 @@ import {
   Toast,
   FormAutocompleteSelect,
 } from "../../components/common";
-import { inventoryAPI, studentAPI } from "../../services/api";
+import { inventoryAPI, studentAPI } from '../../hooks/reactQueryApi';
 
 export default function DistributeBookSetDialog({ open, onClose, onSuccess }) {
   const [students, setStudents] = useState([]);

@@ -13,7 +13,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Dialog, Toast } from '../../components/common';
-import { classAPI } from '../../services/api';
+import { classAPI } from '../../hooks/reactQueryApi';
 import { PageHeader, StatusBadge } from '../../components/dashboard';
 import { useAuth } from '../../context/AuthContext';
 

@@ -3,7 +3,7 @@ import { Box, Typography, Paper, Table as MuiTable, TableBody, TableCell, TableC
 import { Edit as EditIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, DetailPage, DetailSection, DetailRow, StatusChip, Table, BSDatePicker } from '../../components/common';
-import { teacherAPI, timetableAPI, teacherAttendanceAPI } from '../../services/api';
+import { teacherAPI, timetableAPI, teacherAttendanceAPI } from '../../hooks/reactQueryApi';
 import { formatBSDate } from '../../utils/nepaliDate';
 
 export default function TeacherDetail() {

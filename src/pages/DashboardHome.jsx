@@ -10,7 +10,7 @@ import {
   EventNote as EventNoteIcon,
   School as SchoolIcon,
 } from '@mui/icons-material';
-import { studentAPI, feeAPI, classAPI } from '../services/api';
+import { studentAPI, feeAPI, classAPI } from '../hooks/reactQueryApi';
 import { StatCard, DashboardCard, PageHeader } from '../components/dashboard';
 import { useAuth } from '../context/AuthContext';
 

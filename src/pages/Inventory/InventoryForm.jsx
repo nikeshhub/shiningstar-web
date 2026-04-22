@@ -14,7 +14,7 @@ import {
   School as SchoolIcon,
 } from '@mui/icons-material';
 import { Input, Select, Button, Toast } from '../../components/common';
-import { inventoryAPI, classAPI } from '../../services/api';
+import { inventoryAPI, classAPI } from '../../hooks/reactQueryApi';
 
 export default function InventoryForm({ itemData, onSuccess, onCancel }) {
   const [formData, setFormData] = useState({

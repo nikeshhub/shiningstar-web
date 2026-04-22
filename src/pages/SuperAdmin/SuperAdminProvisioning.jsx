@@ -24,7 +24,7 @@ import {
 } from '@mui/icons-material';
 import { Button, Dialog, Input, Select, Toast } from '../../components/common';
 import { DashboardCard, PageHeader } from '../../components/dashboard';
-import { authAPI } from '../../services/api';
+import { authAPI } from '../../hooks/reactQueryApi';
 import { formatBSDate } from '../../utils/nepaliDate';
 
 const TARGET_TYPE_OPTIONS = [

@@ -26,7 +26,7 @@ import {
   Info as InfoIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { studentAPI, classAPI } from '../../services/api';
+import { studentAPI, classAPI } from '../../hooks/reactQueryApi';
 import { Dialog, RoleBasedAccess } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { PageHeader, DashboardCard, StatusBadge } from '../../components/dashboard';
