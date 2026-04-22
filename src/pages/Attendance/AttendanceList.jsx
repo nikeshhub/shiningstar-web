@@ -29,7 +29,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Toast, Select, BSDatePicker } from '../../components/common';
-import { attendanceAPI, classAPI } from '../../services/api';
+import { attendanceAPI, classAPI } from '../../hooks/reactQueryApi';
 import { useAuth } from '../../context/AuthContext';
 import {
   formatBSDateWithDay,

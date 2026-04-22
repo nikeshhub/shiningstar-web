@@ -1,33 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Alert, Box, CircularProgress, Paper, Typography } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components/common';
-import { notificationAPI } from '../../services/api';
+import { useNotification } from '../../hooks';
 import NotificationForm from './NotificationForm';
 
 export default function NotificationFormPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const [notificationData, setNotificationData] = useState(null);
-  const [loading, setLoading] = useState(isEdit);
-  const [loadError, setLoadError] = useState('');
-
-  useEffect(() => {
-    if (!isEdit) return;
-    setLoading(true);
-    setLoadError('');
-    notificationAPI.getById(id)
-      .then((res) => {
-        if (res.data.success) setNotificationData(res.data.data);
-      })
-      .catch((err) => {
-        console.error('Error loading notification:', err);
-        setLoadError(err.response?.data?.message || 'Failed to load notification');
-      })
-      .finally(() => setLoading(false));
-  }, [id, isEdit]);
+  const {
+    data: notificationData = null,
+    isLoading: loading,
+    error,
+  } = useNotification(id, { enabled: isEdit });
+  const loadError = error?.message || '';
 
   const handleSuccess = () => {
     navigate('/dashboard/notifications');

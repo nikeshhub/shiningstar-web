@@ -16,7 +16,7 @@ import {
   AccountBalance as FeeIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import { familyAPI, studentAPI } from '../../services/api';
+import { familyAPI, studentAPI } from '../../hooks/reactQueryApi';
 import { useNavigate } from 'react-router-dom';
 
 export default function ParentDashboard() {

@@ -2,6 +2,9 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { queryClient } from './config/queryClient';
 
 // Context
 import { AuthProvider } from "./context/AuthContext";
@@ -127,10 +130,11 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <AuthProvider>
-        <Routes>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <AuthProvider>
+          <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Homepage />} />
           <Route path="/about" element={<About />} />
@@ -214,7 +218,11 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
+      {process.env.NODE_ENV === "development" && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
     </ThemeProvider>
+  </QueryClientProvider>
   );
 }
 

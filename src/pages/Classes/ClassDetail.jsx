@@ -20,7 +20,7 @@ import {
 import { Edit as EditIcon, Person as PersonIcon, MenuBook as BookIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, DetailPage, DetailSection, DetailRow, StatusChip, Table, Toast } from '../../components/common';
-import { classAPI, timetableAPI } from '../../services/api';
+import { classAPI, timetableAPI } from '../../hooks/reactQueryApi';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ClassDetail() {

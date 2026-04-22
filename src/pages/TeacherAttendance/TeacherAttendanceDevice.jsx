@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@mui/material';
 import { Button, FormAutocompleteSelect, Toast, BSDatePicker } from '../../components/common';
-import { teacherAPI, teacherAttendanceAPI } from '../../services/api';
+import { teacherAPI, teacherAttendanceAPI } from '../../hooks/reactQueryApi';
 import { todayBSDate } from '../../utils/nepaliDate';
 
 const STATUS_OPTIONS = ['Present', 'Absent', 'Leave'];

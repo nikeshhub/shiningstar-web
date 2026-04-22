@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { School as SchoolIcon, People as PeopleIcon, MenuBook as MenuBookIcon } from '@mui/icons-material';
 import { Button, Toast, FormField, FormSelect, FormAutocompleteSelect, FormMultiSelect } from '../../components/common';
-import { classAPI, teacherAPI, subjectAPI } from '../../services/api';
+import { classAPI, teacherAPI, subjectAPI } from '../../hooks/reactQueryApi';
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
 const classSchema = z.object({

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authAPI } from '../services/api';
+import { useLogin, useRegister } from '../hooks';
 
 const AuthContext = createContext(null);
 
@@ -7,6 +7,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const loginMutation = useLogin();
+  const registerMutation = useRegister();
 
   useEffect(() => {
     // Check if user is already logged in
@@ -23,27 +25,18 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (identifier, password) => {
     try {
-      const response = await authAPI.login({ identifier, password });
+      const data = await loginMutation.mutateAsync({ identifier, password });
+      const { user: userData, token: userToken } = data;
 
-      if (response.data.success) {
-        const { user: userData, token: userToken } = response.data.data;
-
-        // Store in localStorage
-        localStorage.setItem('token', userToken);
-        localStorage.setItem('user', JSON.stringify(userData));
-
-        // Update state
-        setToken(userToken);
-        setUser(userData);
-
-        return { success: true, user: userData };
-      } else {
-        return { success: false, message: response.data.message };
-      }
+      localStorage.setItem('token', userToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setToken(userToken);
+      setUser(userData);
+      return { success: true, user: userData };
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || 'Login failed. Please try again.',
+        message: error.message || 'Login failed. Please try again.',
       };
     }
   };
@@ -65,17 +58,12 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await authAPI.register(userData);
-
-      if (response.data.success) {
-        return { success: true, user: response.data.data.user };
-      } else {
-        return { success: false, message: response.data.message };
-      }
+      const data = await registerMutation.mutateAsync(userData);
+      return { success: true, user: data.user };
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || 'Registration failed. Please try again.',
+        message: error.message || 'Registration failed. Please try again.',
       };
     }
   };

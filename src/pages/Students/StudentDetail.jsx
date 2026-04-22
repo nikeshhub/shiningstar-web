@@ -13,7 +13,7 @@ import {
   DetailRow,
   StatusChip,
 } from "../../components/common";
-import { studentAPI } from "../../services/api";
+import { studentAPI } from '../../hooks/reactQueryApi';
 import { formatBSDate } from "../../utils/nepaliDate";
 import { useAuth } from "../../context/AuthContext";
 

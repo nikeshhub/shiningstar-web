@@ -23,7 +23,7 @@ import {
 import { IconButton } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, FormField, FormSelect, FormAutocompleteSelect, Toast } from '../../components/common';
-import { studentAPI, classAPI, familyAPI } from '../../services/api';
+import { studentAPI, classAPI, familyAPI } from '../../hooks/reactQueryApi';
 import { adToBSDate, todayBSDate } from '../../utils/nepaliDate';
 import { resolveAssetUrl } from '../../config/env';
 

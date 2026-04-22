@@ -18,7 +18,7 @@ import {
   Work as WorkIcon,
 } from '@mui/icons-material';
 import { Button, Toast, FormField, FormSelect } from '../../components/common';
-import { teacherAPI } from '../../services/api';
+import { teacherAPI } from '../../hooks/reactQueryApi';
 import { adToBSDate } from '../../utils/nepaliDate';
 
 // ─── Validation Schema ────────────────────────────────────────────────────────

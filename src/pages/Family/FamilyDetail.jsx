@@ -24,7 +24,7 @@ import {
   AccountBalance as LedgerIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { familyAPI, feeAPI } from '../../services/api';
+import { familyAPI, feeAPI } from '../../hooks/reactQueryApi';
 import { Toast, Dialog } from '../../components/common';
 import LinkStudentDialog from './LinkStudentDialog';
 

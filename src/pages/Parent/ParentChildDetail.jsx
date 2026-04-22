@@ -3,7 +3,7 @@ import { Box, Typography, Tabs, Tab, Grid, Card, CardContent, Chip } from '@mui/
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, DetailPage, DetailSection, DetailRow, StatusChip } from '../../components/common';
-import { attendanceAPI, progressReportAPI, studentAPI } from '../../services/api';
+import { attendanceAPI, progressReportAPI, studentAPI } from '../../hooks/reactQueryApi';
 import { useAuth } from '../../context/AuthContext';
 import { formatBSDate } from '../../utils/nepaliDate';
 

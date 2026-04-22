@@ -19,7 +19,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Dialog, Table } from '../../components/common';
-import { notificationAPI } from '../../services/api';
+import { notificationAPI } from '../../hooks/reactQueryApi';
 import { formatBSDate } from '../../utils/nepaliDate';
 
 const TAB_DEFINITIONS = [
