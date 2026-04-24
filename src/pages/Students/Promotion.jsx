@@ -19,6 +19,7 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import { Button, Toast, Select, Input } from '../../components/common';
+import { PageHeader } from '../../components/dashboard';
 import { studentAPI, classAPI } from '../../hooks/reactQueryApi';
 
 const CURRENT_YEAR = '2081-2082';
@@ -137,11 +138,7 @@ export default function Promotion() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-          Promotion & Repeat (पदस्थापना)
-        </Typography>
-      </Box>
+      <PageHeader title="<em>Promotion</em> & Repeat (पदस्थापना)" />
 
       {/* Source Class selector */}
       <Paper sx={{ p: 2, mb: 2 }}>

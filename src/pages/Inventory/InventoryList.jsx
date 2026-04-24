@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Typography,
+  Grid,
   IconButton,
   Chip,
   Dialog,
@@ -25,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Card, Select } from '../../components/common';
+import { PageHeader } from '../../components/dashboard';
 import {
   useAllDistributions,
   useDeleteInventoryItem,
@@ -285,40 +287,48 @@ export default function InventoryList() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-          Inventory Management
-        </Typography>
-        <Button startIcon={<AddIcon />} onClick={() => navigate('/dashboard/inventory/add')}>
-          Add New Item
-        </Button>
-      </Box>
+      <PageHeader
+        title="<em>Inventory</em> Management"
+        action={(
+          <Button startIcon={<AddIcon />} onClick={() => navigate('/dashboard/inventory/add')}>
+            Add New Item
+          </Button>
+        )}
+      />
 
       {/* Stats */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        <Card sx={{ flex: 1 }} contentSx={{ textAlign: 'center' }}>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Card sx={{ height: '100%' }} contentSx={{ textAlign: 'center' }}>
           <Typography variant="h4" color="primary.main" sx={{ fontWeight: 'bold' }}>{stats.totalItems}</Typography>
           <Typography variant="body2" color="text.secondary">Total Items</Typography>
         </Card>
-        <Card sx={{ flex: 1 }} contentSx={{ textAlign: 'center' }}>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Card sx={{ height: '100%' }} contentSx={{ textAlign: 'center' }}>
           <Typography variant="h4" color="success.main" sx={{ fontWeight: 'bold' }}>
             Rs. {stats.totalValue.toFixed(0)}
           </Typography>
           <Typography variant="body2" color="text.secondary">Total Value</Typography>
         </Card>
-        <Card sx={{ flex: 1 }} contentSx={{ textAlign: 'center' }}>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Card sx={{ height: '100%' }} contentSx={{ textAlign: 'center' }}>
           <Typography variant="h4" color="warning.main" sx={{ fontWeight: 'bold' }}>{stats.lowStock}</Typography>
           <Typography variant="body2" color="text.secondary">Low Stock</Typography>
         </Card>
-        <Card sx={{ flex: 1 }} contentSx={{ textAlign: 'center' }}>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Card sx={{ height: '100%' }} contentSx={{ textAlign: 'center' }}>
           <Typography variant="h4" color="error.main" sx={{ fontWeight: 'bold' }}>{stats.outOfStock}</Typography>
           <Typography variant="body2" color="text.secondary">Out of Stock</Typography>
         </Card>
-      </Box>
+        </Grid>
+      </Grid>
 
       {/* Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-        <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)}>
+        <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} variant="scrollable" allowScrollButtonsMobile>
           <Tab label={`All Items (${inventory.length})`} />
           <Tab
             label={`Low Stock (${stats.lowStock})`}
@@ -336,13 +346,13 @@ export default function InventoryList() {
 
       {/* Inventory tabs (0,1,2) — shared search/filter toolbar */}
       {tabValue < 3 && (
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
           <TextField
             size="small"
             placeholder="Search by name or code..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            sx={{ width: 280 }}
+            sx={{ width: { xs: '100%', sm: 280 } }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -359,7 +369,7 @@ export default function InventoryList() {
             options={CATEGORIES}
             allowNone
             noneLabel="All Categories"
-            sx={{ width: 180 }}
+            sx={{ width: { xs: '100%', sm: 180 } }}
             size="small"
           />
         </Box>
@@ -402,19 +412,21 @@ export default function InventoryList() {
       {/* Distributions tab */}
       {tabValue === 3 && (
         <>
-          <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
-            <Select
-              label="Payment Status"
-              name="filterPaymentStatus"
-              value={filterPaymentStatus}
-              onChange={e => setFilterPaymentStatus(e.target.value)}
-              options={PAYMENT_STATUSES}
-              allowNone
-              noneLabel="All Statuses"
-              sx={{ width: 200 }}
-              size="small"
-            />
-            <Box sx={{ ml: 'auto' }}>
+          <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Box sx={{ width: { xs: '100%', sm: 200 } }}>
+              <Select
+                label="Payment Status"
+                name="filterPaymentStatus"
+                value={filterPaymentStatus}
+                onChange={e => setFilterPaymentStatus(e.target.value)}
+                options={PAYMENT_STATUSES}
+                allowNone
+                noneLabel="All Statuses"
+                sx={{ width: '100%' }}
+                size="small"
+              />
+            </Box>
+            <Box sx={{ ml: { xs: 0, sm: 'auto' }, width: { xs: '100%', sm: 'auto' } }}>
               <Button
                 variant="outlined"
                 startIcon={<AddIcon />}

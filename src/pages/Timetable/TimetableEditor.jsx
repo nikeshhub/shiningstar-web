@@ -15,6 +15,7 @@ import {
   Chip,
 } from "@mui/material";
 import { Button, Select, Toast } from "../../components/common";
+import { PageHeader } from "../../components/dashboard";
 import {
   classAPI,
   subjectAPI,
@@ -343,23 +344,16 @@ export default function TimetableEditor() {
 
   return (
     <Box>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
-        }}
-      >
-        <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-          {canEditTimetable ? "Timetable" : "My Timetable"}
-        </Typography>
-        {canEditTimetable && (
-          <Button onClick={handleSave} loading={loading}>
-            Save Timetable
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title={canEditTimetable ? "<em>Timetable</em>" : "My <em>Timetable</em>"}
+        action={
+          canEditTimetable ? (
+            <Button onClick={handleSave} loading={loading}>
+              Save Timetable
+            </Button>
+          ) : null
+        }
+      />
 
       <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
         <Table stickyHeader size="small">

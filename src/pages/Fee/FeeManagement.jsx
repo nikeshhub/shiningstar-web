@@ -23,6 +23,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Table } from '../../components/common';
+import { PageHeader } from '../../components/dashboard';
 import { todayBSDate } from '../../utils/nepaliDate';
 import { useCollectionSummary, useDuesList, useQueryStatus } from '../../hooks';
 
@@ -124,15 +125,10 @@ export default function FeeManagement() {
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-          Fee Management
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Family-level fee collections, dues, and payments. All fees are billed and tracked per family.
-        </Typography>
-      </Box>
+      <PageHeader title="<em>Fee</em> Management" />
+      <Typography variant="body2" color="text.secondary" sx={{ mt: -1, mb: 3 }}>
+        Family-level fee collections, dues, and payments. All fees are billed and tracked per family.
+      </Typography>
 
       {/* Statistics Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
