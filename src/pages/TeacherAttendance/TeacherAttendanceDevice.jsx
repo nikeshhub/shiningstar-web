@@ -14,6 +14,7 @@ import {
   TableRow,
 } from '@mui/material';
 import { Button, FormAutocompleteSelect, Toast, BSDatePicker } from '../../components/common';
+import { PageHeader } from '../../components/dashboard';
 import { teacherAPI, teacherAttendanceAPI } from '../../hooks/reactQueryApi';
 import { todayBSDate } from '../../utils/nepaliDate';
 
@@ -110,9 +111,7 @@ export default function TeacherAttendanceDevice() {
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
-        Teacher Attendance (Device)
-      </Typography>
+      <PageHeader title="Teacher <em>Attendance</em> (Device)" />
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={2}>
