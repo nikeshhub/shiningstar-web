@@ -5,7 +5,7 @@ import {
   Card,
   CardContent,
   Chip,
-  CircularProgress,
+  LinearProgress,
   Grid,
   Paper,
   Table,
@@ -26,7 +26,7 @@ import {
 import { Button, Select, Toast } from '../../components/common';
 import { ROLE_PERMISSIONS, ROLES } from '../../config/permissions';
 import { useAuth } from '../../context/AuthContext';
-import { authAPI } from '../../hooks/reactQueryApi';
+import { useQueryStatus, useToggleUserStatus, useUsers } from '../../hooks';
 import { formatBSDate } from '../../utils/nepaliDate';
 
 const ROLE_OPTIONS = [
@@ -89,37 +89,24 @@ const formatLastSeen = (value) => {
 export default function SuperAdminOverview() {
   const { user } = useAuth();
   const [roleFilter, setRoleFilter] = useState('');
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [workingUserId, setWorkingUserId] = useState('');
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
-
-  const loadUsers = async (nextRole = roleFilter) => {
-    try {
-      setLoading(true);
-      const params = {};
-      if (nextRole) {
-        params.role = nextRole;
-      }
-
-      const response = await authAPI.getUsers(params);
-      if (response.data.success) {
-        setUsers(response.data.data || []);
-      }
-    } catch (error) {
-      setToast({
-        open: true,
-        message: error.response?.data?.message || 'Failed to load system users',
-        severity: 'error',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const params = roleFilter ? { role: roleFilter } : {};
+  const usersQuery = useUsers(params);
+  const { data: users = [], error, isInitialLoading, isRefreshing } = useQueryStatus(usersQuery, {
+    hasData: (data) => Array.isArray(data),
+  });
+  const toggleUserStatusMutation = useToggleUserStatus();
 
   useEffect(() => {
-    loadUsers(roleFilter);
-  }, [roleFilter]);
+    if (error) {
+      setToast({
+        open: true,
+        message: error.message || 'Failed to load system users',
+        severity: 'error',
+      });
+    }
+  }, [error]);
 
   const stats = useMemo(() => ({
     total: users.length,
@@ -133,27 +120,19 @@ export default function SuperAdminOverview() {
       setWorkingUserId(account._id);
       const nextState = !account.isActive;
 
-      const response = await authAPI.toggleUserStatus({
+      await toggleUserStatusMutation.mutateAsync({
         userId: account._id,
         isActive: nextState,
       });
-
-      if (response.data.success) {
-        setUsers((prev) => prev.map((item) => (
-          item._id === account._id
-            ? { ...item, isActive: nextState }
-            : item
-        )));
-        setToast({
-          open: true,
-          message: `User ${nextState ? 'activated' : 'deactivated'} successfully`,
-          severity: 'success',
-        });
-      }
+      setToast({
+        open: true,
+        message: `User ${nextState ? 'activated' : 'deactivated'} successfully`,
+        severity: 'success',
+      });
     } catch (error) {
       setToast({
         open: true,
-        message: error.response?.data?.message || 'Failed to update user status',
+        message: error.message || 'Failed to update user status',
         severity: 'error',
       });
     } finally {
@@ -281,9 +260,10 @@ export default function SuperAdminOverview() {
             </Box>
           </Box>
 
-          {loading ? (
+          {isRefreshing && <LinearProgress sx={{ mb: 2 }} />}
+          {isInitialLoading ? (
             <Box sx={{ py: 6, textAlign: 'center' }}>
-              <CircularProgress />
+              <Typography color="text.secondary">Loading users...</Typography>
             </Box>
           ) : (
             <TableContainer component={Paper} variant="outlined">

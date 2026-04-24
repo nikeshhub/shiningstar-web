@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Toast, Select } from "../../components/common";
-import { useCreateSubject, useSubject, useUpdateSubject } from "../../hooks";
+import { Button, QueryState, Toast, Select } from "../../components/common";
+import { useCreateSubject, useQueryStatus, useSubject, useUpdateSubject } from "../../hooks";
 
 const SUBJECT_TYPES = ["Major", "Minor"];
 
@@ -41,11 +41,13 @@ export default function SubjectForm() {
     severity: "info",
   });
 
+  const subjectQuery = useSubject(id);
   const {
     data: subjectData,
-    isLoading: isSubjectLoading,
     error: subjectError,
-  } = useSubject(id);
+    isInitialLoading: isSubjectLoading,
+    isRefreshing: isSubjectRefreshing,
+  } = useQueryStatus(subjectQuery);
   const createSubjectMutation = useCreateSubject();
   const updateSubjectMutation = useUpdateSubject();
   const isSubmitting =
@@ -156,7 +158,14 @@ export default function SubjectForm() {
         </Typography>
       </Box>
 
-      <form onSubmit={handleSubmit}>
+      <QueryState
+        isLoading={isEdit && isSubjectLoading}
+        isRefreshing={isEdit && isSubjectRefreshing}
+        error={isEdit ? subjectError : null}
+        loadingText="Loading subject details..."
+        minHeight={320}
+      >
+        <form onSubmit={handleSubmit}>
         {/* Basic Information */}
         <Card sx={{ mb: 3, boxShadow: 2, borderRadius: 2 }}>
           <CardContent sx={{ p: 4 }}>
@@ -401,7 +410,8 @@ export default function SubjectForm() {
             </Button>
           </Box>
         </Paper>
-      </form>
+        </form>
+      </QueryState>
 
       <Toast
         toast={toast}

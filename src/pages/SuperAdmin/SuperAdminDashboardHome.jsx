@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
   Box,
   Chip,
-  CircularProgress,
   Grid,
   Table,
   TableBody,
@@ -19,9 +18,9 @@ import {
   PersonAddAlt1 as PersonAddAlt1Icon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { Button, Toast } from '../../components/common';
+import { Button, QueryState, Toast } from '../../components/common';
 import { DashboardCard, PageHeader, StatCard } from '../../components/dashboard';
-import { authAPI } from '../../hooks/reactQueryApi';
+import { useQueryStatus, useSystemOverview } from '../../hooks';
 import { formatBSDate } from '../../utils/nepaliDate';
 
 const formatDateTime = (value) => {
@@ -42,46 +41,22 @@ const formatDateTime = (value) => {
 
 export default function SuperAdminDashboardHome() {
   const navigate = useNavigate();
-  const [overview, setOverview] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
-
-  useEffect(() => {
-    loadOverview();
-  }, []);
-
-  const loadOverview = async () => {
-    try {
-      setLoading(true);
-      const response = await authAPI.getSystemOverview();
-
-      if (response.data.success) {
-        setOverview(response.data.data);
-      }
-    } catch (error) {
-      setToast({
-        open: true,
-        message: error.response?.data?.message || 'Failed to load superadmin dashboard',
-        severity: 'error',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <Box sx={{ py: 8, textAlign: 'center' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  const overviewQuery = useSystemOverview();
+  const { data: overview = null, error, isInitialLoading, isRefreshing } = useQueryStatus(overviewQuery);
 
   const users = overview?.users || {};
   const provisioning = overview?.provisioning || {};
   const recentUsers = overview?.recentUsers || [];
 
   return (
+    <QueryState
+      isLoading={isInitialLoading}
+      isRefreshing={isRefreshing}
+      error={error}
+      loadingText="Loading system dashboard..."
+      minHeight={320}
+    >
     <Box>
       <PageHeader
         title="System <em>Dashboard</em>"
@@ -245,5 +220,6 @@ export default function SuperAdminDashboardHome() {
 
       <Toast toast={toast} onClose={() => setToast((prev) => ({ ...prev, open: false }))} />
     </Box>
+    </QueryState>
   );
 }

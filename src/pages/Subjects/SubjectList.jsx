@@ -13,7 +13,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Dialog, Toast } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
-import { useSubjects, useDeleteSubject } from '../../hooks';
+import { PageHeader } from '../../components/dashboard';
+import { useDeleteSubject, useQueryStatus, useSubjects } from '../../hooks';
 
 export default function SubjectList() {
   const navigate = useNavigate();
@@ -24,7 +25,10 @@ export default function SubjectList() {
   const canManageSubjects = user?.role === 'Admin';
 
   // React Query hooks
-  const { data: subjects = [], isLoading: loading, error } = useSubjects();
+  const subjectsQuery = useSubjects();
+  const { data: subjects = [], error, isInitialLoading, isRefreshing } = useQueryStatus(subjectsQuery, {
+    hasData: (data) => Array.isArray(data),
+  });
   const deleteSubjectMutation = useDeleteSubject();
 
   // Show error toast if query fails
@@ -196,21 +200,23 @@ export default function SubjectList() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-          Subjects Management (विषय व्यवस्थापन)
-        </Typography>
-        {canManageSubjects && (
-          <Button startIcon={<AddIcon />} onClick={handleAdd}>
-            Add New Subject
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="<em>Subjects</em> Management (विषय व्यवस्थापन)"
+        action={
+          canManageSubjects ? (
+            <Button startIcon={<AddIcon />} onClick={handleAdd}>
+              Add New Subject
+            </Button>
+          ) : null
+        }
+      />
 
       <Table
         columns={columns}
         rows={subjects}
-        loading={loading}
+        loading={isInitialLoading}
+        fetching={isRefreshing}
+        loadingMessage="Loading subjects..."
         emptyMessage="No subjects found. Click 'Add New Subject' to create one."
         hover
       />

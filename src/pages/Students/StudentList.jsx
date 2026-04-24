@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Box,
+  LinearProgress,
   Table,
   TableBody,
   TableCell,
@@ -26,62 +27,41 @@ import {
   Info as InfoIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { studentAPI, classAPI } from '../../hooks/reactQueryApi';
 import { Dialog, RoleBasedAccess } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { PageHeader, DashboardCard, StatusBadge } from '../../components/dashboard';
+import { useClasses, useDeleteStudent, useQueryStatus, useStudents } from '../../hooks';
 
 export default function StudentList() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [students, setStudents] = useState([]);
-  const [classes, setClasses] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
   const [filterClass, setFilterClass] = useState('');
   const [filterStatus, setFilterStatus] = useState('Active');
   const [deleteDialog, setDeleteDialog] = useState({ open: false, studentId: null, studentName: '' });
   const canManageStudents = user?.role === 'Admin';
   const showFeeBalance = user?.role === 'Admin';
   const isTeacher = user?.role === 'Teacher';
-
-  useEffect(() => {
-    loadClasses();
-    loadStudents();
-  }, [filterClass, filterStatus]);
-
-  const loadClasses = async () => {
-    try {
-      const response = await classAPI.getAll();
-      if (response.data.success) {
-        setClasses(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error loading classes:', error);
-    }
-  };
-
-  const loadStudents = async () => {
-    try {
-      setLoading(true);
-      const params = {};
-      if (search) params.search = search;
-      if (filterClass && !isTeacher) params.class = filterClass;
-      if (filterStatus) params.status = filterStatus;
-
-      const response = await studentAPI.getAll(params);
-      if (response.data.success) {
-        setStudents(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error loading students:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const queryParams = useMemo(() => {
+    const params = {};
+    if (appliedSearch) params.search = appliedSearch;
+    if (filterClass && !isTeacher) params.class = filterClass;
+    if (filterStatus) params.status = filterStatus;
+    return params;
+  }, [appliedSearch, filterClass, filterStatus, isTeacher]);
+  const studentsQuery = useStudents(queryParams);
+  const classesQuery = useClasses();
+  const { data: students = [], isInitialLoading, isRefreshing } = useQueryStatus(studentsQuery, {
+    hasData: (data) => Array.isArray(data),
+  });
+  const { data: classes = [] } = useQueryStatus(classesQuery, {
+    hasData: (data) => Array.isArray(data),
+  });
+  const deleteStudentMutation = useDeleteStudent();
 
   const handleSearch = () => {
-    loadStudents();
+    setAppliedSearch(search.trim());
   };
 
   const handleDelete = (student) => {
@@ -90,9 +70,8 @@ export default function StudentList() {
 
   const confirmDelete = async () => {
     try {
-      await studentAPI.delete(deleteDialog.studentId);
+      await deleteStudentMutation.mutateAsync(deleteDialog.studentId);
       setDeleteDialog({ open: false, studentId: null, studentName: '' });
-      loadStudents();
     } catch (error) {
       console.error('Error deleting student:', error);
     }
@@ -199,6 +178,7 @@ export default function StudentList() {
       </DashboardCard>
 
       <DashboardCard noPadding>
+        {isRefreshing && <LinearProgress />}
         <TableContainer>
           <Table>
             <TableHead>
@@ -397,7 +377,7 @@ export default function StudentList() {
                 </TableCell>
               </TableRow>
             ))}
-            {students.length === 0 && !loading && (
+            {students.length === 0 && !isInitialLoading && (
               <TableRow>
                 <TableCell colSpan={showFeeBalance ? 8 : 7} align="center" sx={{ py: 4 }}>
                   <Typography
@@ -414,6 +394,11 @@ export default function StudentList() {
           </TableBody>
         </Table>
         </TableContainer>
+        {isInitialLoading && (
+          <Box sx={{ py: 6, textAlign: 'center' }}>
+            <Typography color="text.secondary">Loading students...</Typography>
+          </Box>
+        )}
       </DashboardCard>
 
       <Dialog

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -13,39 +13,29 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Dialog, Toast } from '../../components/common';
-import { classAPI } from '../../hooks/reactQueryApi';
+import { useClasses, useDeleteClass, useQueryStatus } from '../../hooks';
 import { PageHeader, StatusBadge } from '../../components/dashboard';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ClassList() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [classes, setClasses] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [classToDelete, setClassToDelete] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
   const canManageClasses = user?.role === 'Admin';
   const showFinancialColumns = user?.role === 'Admin';
+  const classesQuery = useClasses();
+  const { data: classes = [], error, isInitialLoading, isRefreshing } = useQueryStatus(classesQuery, {
+    hasData: (data) => Array.isArray(data),
+  });
+  const deleteClassMutation = useDeleteClass();
 
   useEffect(() => {
-    loadClasses();
-  }, []);
-
-  const loadClasses = async () => {
-    try {
-      setLoading(true);
-      const response = await classAPI.getAll();
-      if (response.data.success) {
-        setClasses(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error loading classes:', error);
+    if (error) {
       setToast({ open: true, message: 'Failed to load classes.', severity: 'error' });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error]);
 
   const handleAdd = () => {
     navigate('/dashboard/classes/add');
@@ -57,16 +47,10 @@ export default function ClassList() {
 
   const handleDelete = async () => {
     try {
-      const response = await classAPI.delete(classToDelete._id);
-      if (response.data.success) {
-        setToast({ open: true, message: 'Class deleted successfully!', severity: 'success' });
-        setDeleteDialog(false);
-        setClassToDelete(null);
-        loadClasses();
-      } else {
-        setToast({ open: true, message: response.data.message, severity: 'error' });
-        setDeleteDialog(false);
-      }
+      await deleteClassMutation.mutateAsync(classToDelete._id);
+      setToast({ open: true, message: 'Class deleted successfully!', severity: 'success' });
+      setDeleteDialog(false);
+      setClassToDelete(null);
     } catch (error) {
       console.error('Error deleting class:', error);
       setToast({ open: true, message: 'Failed to delete class', severity: 'error' });
@@ -184,7 +168,9 @@ export default function ClassList() {
       <Table
         columns={columns}
         rows={classes}
-        loading={loading}
+        loading={isInitialLoading}
+        fetching={isRefreshing}
+        loadingMessage="Loading classes..."
         emptyMessage="No classes found. Click 'Add New Class' to create one."
         hover
       />

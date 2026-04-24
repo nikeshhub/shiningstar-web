@@ -2,15 +2,21 @@ import React from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button } from '../../components/common';
-import { useInventoryItem } from '../../hooks';
+import { Button, QueryState } from '../../components/common';
+import { useInventoryItem, useQueryStatus } from '../../hooks';
 import InventoryForm from './InventoryForm';
 
 export default function InventoryFormPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const { data: itemData = null } = useInventoryItem(id, { enabled: isEdit });
+  const itemQuery = useInventoryItem(id, { enabled: isEdit });
+  const {
+    data: itemData = null,
+    error,
+    isInitialLoading,
+    isRefreshing,
+  } = useQueryStatus(itemQuery);
 
   const handleSuccess = () => {
     navigate('/dashboard/inventory');
@@ -37,7 +43,14 @@ export default function InventoryFormPage() {
       </Box>
 
       <Paper sx={{ p: 3 }}>
-        <InventoryForm itemData={itemData} onSuccess={handleSuccess} onCancel={handleCancel} />
+        <QueryState
+          isLoading={isEdit && isInitialLoading}
+          isRefreshing={isEdit && isRefreshing}
+          error={isEdit ? error : null}
+          loadingText="Loading inventory item..."
+        >
+          <InventoryForm itemData={itemData} onSuccess={handleSuccess} onCancel={handleCancel} />
+        </QueryState>
       </Paper>
     </Box>
   );
