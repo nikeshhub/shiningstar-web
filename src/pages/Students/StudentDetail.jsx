@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Box, Typography, Avatar, Chip, Divider } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -13,7 +13,7 @@ import {
   DetailRow,
   StatusChip,
 } from "../../components/common";
-import { studentAPI } from '../../hooks/reactQueryApi';
+import { useQueryStatus, useStudent } from "../../hooks";
 import { formatBSDate } from "../../utils/nepaliDate";
 import { useAuth } from "../../context/AuthContext";
 
@@ -55,29 +55,13 @@ export default function StudentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [student, setStudent] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [bcOpen, setBcOpen] = useState(false);
   const canManageStudent = user?.role === "Admin";
   const canViewFamilyFinancials = user?.role === "Admin";
+  const studentQuery = useStudent(id);
+  const { data: student = null, isInitialLoading } = useQueryStatus(studentQuery);
 
-  useEffect(() => {
-    loadStudent();
-  }, [id]);
-
-  const loadStudent = async () => {
-    try {
-      setLoading(true);
-      const response = await studentAPI.getById(id);
-      if (response.data.success) setStudent(response.data.data);
-    } catch (error) {
-      console.error("Error loading student:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) return <DetailPage loading={true} />;
+  if (isInitialLoading) return <DetailPage loading={true} />;
 
   if (!student) {
     return (

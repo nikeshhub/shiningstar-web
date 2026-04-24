@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Paper,
@@ -22,8 +22,8 @@ import {
   Print as PrintIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { feeAPI } from '../../hooks/reactQueryApi';
-import { Toast } from '../../components/common';
+import { QueryState, Toast } from '../../components/common';
+import { useFeeTransaction, useQueryStatus } from '../../hooks';
 import { formatBSDate, formatBSDateShort } from '../../utils/nepaliDate';
 
 /**
@@ -40,36 +40,12 @@ export default function BillPreview() {
   const navigate = useNavigate();
   const { id, txnId } = useParams();
 
-  const [txn, setTxn] = useState(null);
-  const [family, setFamily] = useState(null);
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
-
-  useEffect(() => {
-    if (txnId) loadTransaction();
-  }, [txnId]);
-
-  const loadTransaction = async () => {
-    try {
-      setLoading(true);
-      const response = await feeAPI.getTransaction(txnId);
-      if (response.data.success) {
-        setTxn(response.data.data.transaction);
-        setFamily(response.data.data.family);
-        setStudents(response.data.data.students || []);
-      }
-    } catch (error) {
-      console.error('Error loading transaction:', error);
-      setToast({
-        open: true,
-        message: error.response?.data?.message || 'Failed to load transaction',
-        severity: 'error',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const transactionQuery = useFeeTransaction(txnId);
+  const { data, error, isInitialLoading, isRefreshing } = useQueryStatus(transactionQuery);
+  const txn = data?.transaction || null;
+  const family = data?.family || null;
+  const students = data?.students || [];
 
   // Print = open the actual stored PDF in a new tab so the browser's native
   // PDF viewer handles printing. Falls back to HTML print only when no PDF is
@@ -82,15 +58,7 @@ export default function BillPreview() {
     }
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Typography>Loading…</Typography>
-      </Box>
-    );
-  }
-
-  if (!txn) {
+  if (!txn && !isInitialLoading) {
     return (
       <Box sx={{ p: 3 }}>
         <Button
@@ -100,7 +68,9 @@ export default function BillPreview() {
         >
           Back to Ledger
         </Button>
-        <Typography color="error">Transaction not found.</Typography>
+        <Typography color="error">
+          {error?.message || 'Transaction not found.'}
+        </Typography>
         <Toast toast={toast} onClose={() => setToast({ ...toast, open: false })} />
       </Box>
     );
@@ -116,6 +86,13 @@ export default function BillPreview() {
     : totalAmount;
 
   return (
+    <QueryState
+      isLoading={isInitialLoading}
+      isRefreshing={isRefreshing}
+      error={null}
+      loadingText="Loading transaction..."
+      minHeight={240}
+    >
     <Box>
       {/* Header + actions — hidden when printing */}
       <Box
@@ -466,5 +443,6 @@ export default function BillPreview() {
 
       <Toast toast={toast} onClose={() => setToast({ ...toast, open: false })} />
     </Box>
+    </QueryState>
   );
 }

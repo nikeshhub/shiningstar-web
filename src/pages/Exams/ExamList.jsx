@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -23,35 +23,37 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button } from '../../components/common';
-import { examAPI } from '../../services/api';
+import {
+  useDeleteExam,
+  useDownloadExamNotice,
+  useExams,
+  useGenerateExamNotice,
+  useQueryStatus,
+} from '../../hooks';
+import { formatBSDate } from '../../utils/nepaliDate';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ExamList() {
   const navigate = useNavigate();
-  const [exams, setExams] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [examToDelete, setExamToDelete] = useState(null);
   const [tabValue, setTabValue] = useState(0);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+  const canManageExams = user?.role === 'Admin';
+  const examsQuery = useExams();
+  const { data: exams = [], error, isInitialLoading, isRefreshing } = useQueryStatus(examsQuery, {
+    hasData: (data) => Array.isArray(data),
+  });
+  const deleteExamMutation = useDeleteExam();
+  const generateNoticeMutation = useGenerateExamNotice();
+  const downloadNoticeMutation = useDownloadExamNotice();
 
   useEffect(() => {
-    loadExams();
-  }, []);
-
-  const loadExams = async () => {
-    try {
-      setLoading(true);
-      const response = await examAPI.getAll();
-      if (response.data.success) {
-        setExams(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error loading exams:', error);
-      setSnackbar({ open: true, message: 'Failed to load exams. Please check if the server is running.', severity: 'error' });
-    } finally {
-      setLoading(false);
+    if (error) {
+      setSnackbar({ open: true, message: error.message || 'Failed to load exams.', severity: 'error' });
     }
-  };
+  }, [error]);
 
   const handleAdd = () => {
     navigate('/dashboard/exams/add');
@@ -63,11 +65,10 @@ export default function ExamList() {
 
   const handleDelete = async () => {
     try {
-      await examAPI.delete(examToDelete._id);
+      await deleteExamMutation.mutateAsync(examToDelete._id);
       setSnackbar({ open: true, message: 'Exam deleted successfully!', severity: 'success' });
       setDeleteDialog(false);
       setExamToDelete(null);
-      loadExams();
     } catch (error) {
       console.error('Error deleting exam:', error);
       setSnackbar({ open: true, message: 'Failed to delete exam', severity: 'error' });
@@ -76,11 +77,8 @@ export default function ExamList() {
 
   const handleGenerateNotice = async (examId) => {
     try {
-      const response = await examAPI.generateNotice(examId);
-      if (response.data.success) {
-        setSnackbar({ open: true, message: 'Exam notice generated successfully!', severity: 'success' });
-        loadExams();
-      }
+      await generateNoticeMutation.mutateAsync(examId);
+      setSnackbar({ open: true, message: 'Exam notice generated successfully!', severity: 'success' });
     } catch (error) {
       console.error('Error generating notice:', error);
       setSnackbar({ open: true, message: 'Failed to generate notice', severity: 'error' });
@@ -89,7 +87,7 @@ export default function ExamList() {
 
   const handleDownloadNotice = async (examId, examName) => {
     try {
-      const response = await examAPI.downloadNotice(examId);
+      const response = await downloadNoticeMutation.mutateAsync(examId);
 
       // Create blob and download
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -105,45 +103,28 @@ export default function ExamList() {
     }
   };
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-GB');
-  };
+  // BS (Bikram Sambat) — the whole app runs on Nepali dates.
+  const formatDate = (date) => formatBSDate(date);
 
   const columns = [
     {
       field: 'examName',
       headerName: 'Exam Name',
-      width: 220,
+      width: 260,
       renderCell: (row) => (
         <Box>
           <Typography variant="body2" sx={{ fontWeight: 500 }}>
             {row.examName}
           </Typography>
-          {row.examType === 'Terminal' && row.terminalNumber && (
+          {row.terminalNumber && (
             <Chip
-              label={`T${row.terminalNumber}`}
+              label={`Terminal ${row.terminalNumber}`}
               size="small"
               color="warning"
               sx={{ mt: 0.5, height: 18, fontSize: '0.7rem' }}
             />
           )}
         </Box>
-      ),
-    },
-    {
-      field: 'examType',
-      headerName: 'Type',
-      width: 120,
-      renderCell: (row) => (
-        <Chip
-          label={row.examType}
-          size="small"
-          color={
-            row.examType === 'Final' ? 'error' :
-            row.examType === 'Terminal' ? 'warning' :
-            'primary'
-          }
-        />
       ),
     },
     {
@@ -216,14 +197,16 @@ export default function ExamList() {
           >
             <GradeIcon fontSize="small" />
           </IconButton>
-          <IconButton
-            size="small"
-            color="secondary"
-            onClick={() => handleGenerateNotice(row._id)}
-            title="Generate Notice PDF"
-          >
-            <PdfIcon fontSize="small" />
-          </IconButton>
+          {canManageExams && (
+            <IconButton
+              size="small"
+              color="secondary"
+              onClick={() => handleGenerateNotice(row._id)}
+              title="Generate Notice PDF"
+            >
+              <PdfIcon fontSize="small" />
+            </IconButton>
+          )}
           {row.noticeGenerated && (
             <IconButton
               size="small"
@@ -234,25 +217,29 @@ export default function ExamList() {
               <DownloadIcon fontSize="small" />
             </IconButton>
           )}
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={() => handleEdit(row)}
-            title="Edit"
-          >
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={() => {
-              setExamToDelete(row);
-              setDeleteDialog(true);
-            }}
-            title="Delete"
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+          {canManageExams && (
+            <IconButton
+              size="small"
+              color="primary"
+              onClick={() => handleEdit(row)}
+              title="Edit"
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+          {canManageExams && (
+            <IconButton
+              size="small"
+              color="error"
+              onClick={() => {
+                setExamToDelete(row);
+                setDeleteDialog(true);
+              }}
+              title="Delete"
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          )}
         </Box>
       ),
     },
@@ -267,9 +254,11 @@ export default function ExamList() {
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
           Exams & Marks (परीक्षा तथा नम्बर)
         </Typography>
-        <Button startIcon={<AddIcon />} onClick={handleAdd}>
-          Add New Exam
-        </Button>
+        {canManageExams && (
+          <Button startIcon={<AddIcon />} onClick={handleAdd}>
+            Add New Exam
+          </Button>
+        )}
       </Box>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
@@ -284,8 +273,10 @@ export default function ExamList() {
         <Table
           columns={columns}
           rows={exams}
-          loading={loading}
-          emptyMessage="No exams found. Click 'Add New Exam' to create one."
+          loading={isInitialLoading}
+          fetching={isRefreshing}
+          loadingMessage="Loading exams..."
+          emptyMessage={canManageExams ? "No exams found. Click 'Add New Exam' to create one." : "No exams found for your class teacher class."}
           hover
         />
       )}
@@ -294,7 +285,9 @@ export default function ExamList() {
         <Table
           columns={columns}
           rows={upcomingExams}
-          loading={loading}
+          loading={isInitialLoading}
+          fetching={isRefreshing}
+          loadingMessage="Loading exams..."
           emptyMessage="No upcoming exams scheduled."
           hover
         />
@@ -304,7 +297,9 @@ export default function ExamList() {
         <Table
           columns={columns}
           rows={completedExams}
-          loading={loading}
+          loading={isInitialLoading}
+          fetching={isRefreshing}
+          loadingMessage="Loading exams..."
           emptyMessage="No completed exams."
           hover
         />

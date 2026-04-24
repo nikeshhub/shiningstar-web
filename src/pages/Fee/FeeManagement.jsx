@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Box,
   Grid,
@@ -11,6 +11,7 @@ import {
   Chip,
   Alert,
   Snackbar,
+  LinearProgress,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -21,69 +22,32 @@ import {
   AttachMoney as MoneyIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { feeAPI } from '../../hooks/reactQueryApi';
 import { Table } from '../../components/common';
 import { todayBSDate } from '../../utils/nepaliDate';
+import { useCollectionSummary, useDuesList, useQueryStatus } from '../../hooks';
 
 export default function FeeManagement() {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({
-    totalDues: 0,
-    totalAdvance: 0,
-    todayCollection: 0,
-    familiesWithDues: 0,
-  });
-  const [duesList, setDuesList] = useState([]);
   const [filters, setFilters] = useState({
     minAmount: '',
     searchQuery: '',
   });
-  const [loading, setLoading] = useState(true);
+  const [appliedMinAmount, setAppliedMinAmount] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
-
-  useEffect(() => {
-    loadDuesList();
-    loadCollectionSummary();
-  }, []);
-
-  const loadDuesList = async () => {
-    try {
-      setLoading(true);
-      const params = {};
-      if (filters.minAmount) params.minAmount = filters.minAmount;
-
-      const response = await feeAPI.getDuesList(params);
-      if (response.data.success) {
-        const { families, totalDues, count } = response.data.data;
-        setDuesList(families || []);
-        setStats((prev) => ({
-          ...prev,
-          totalDues,
-          familiesWithDues: count,
-        }));
-      }
-    } catch (error) {
-      console.error('Error loading dues list:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadCollectionSummary = async () => {
-    try {
-      const response = await feeAPI.getCollectionSummary({
-        startDate: todayBSDate(),
-      });
-
-      if (response.data.success) {
-        setStats((prev) => ({
-          ...prev,
-          todayCollection: response.data.data.totalCollection,
-        }));
-      }
-    } catch (error) {
-      console.error('Error loading collection summary:', error);
-    }
+  const duesParams = useMemo(
+    () => (appliedMinAmount ? { minAmount: appliedMinAmount } : {}),
+    [appliedMinAmount]
+  );
+  const duesQuery = useDuesList(duesParams);
+  const collectionSummaryQuery = useCollectionSummary({ startDate: todayBSDate() });
+  const { data: duesData, isInitialLoading, isRefreshing } = useQueryStatus(duesQuery);
+  const { data: collectionSummaryData } = useQueryStatus(collectionSummaryQuery);
+  const duesList = duesData?.families || [];
+  const stats = {
+    totalDues: duesData?.totalDues || 0,
+    totalAdvance: duesData?.totalAdvance || 0,
+    todayCollection: collectionSummaryData?.totalCollection || 0,
+    familiesWithDues: duesData?.count || 0,
   };
 
   const handleFilterChange = (field, value) => {
@@ -91,7 +55,7 @@ export default function FeeManagement() {
   };
 
   const handleApplyFilters = () => {
-    loadDuesList();
+    setAppliedMinAmount(filters.minAmount);
   };
 
   const filteredDuesList = duesList.filter((family) => {
@@ -313,18 +277,23 @@ export default function FeeManagement() {
             />
           </Box>
 
-          {filteredDuesList.length === 0 && !loading ? (
+          {filteredDuesList.length === 0 && !isInitialLoading ? (
             <Alert severity="success">
               No families with pending dues! All clear.
             </Alert>
           ) : (
-            <Table
-              columns={columns}
-              rows={filteredDuesList}
-              loading={loading}
-              pagination={true}
-              rowsPerPage={10}
-            />
+            <>
+              {isRefreshing && <LinearProgress sx={{ mb: 2 }} />}
+              <Table
+                columns={columns}
+                rows={filteredDuesList}
+                loading={isInitialLoading}
+                fetching={isRefreshing}
+                loadingMessage="Loading fee dues..."
+                pagination={true}
+                rowsPerPage={10}
+              />
+            </>
           )}
         </CardContent>
       </Card>
