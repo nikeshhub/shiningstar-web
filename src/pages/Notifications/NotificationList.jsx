@@ -19,7 +19,12 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Dialog, Table } from '../../components/common';
-import { notificationAPI } from '../../hooks/reactQueryApi';
+import {
+  useDeleteNotification,
+  useNotifications,
+  useQueryStatus,
+  useSendNotification,
+} from '../../hooks';
 import { formatBSDate } from '../../utils/nepaliDate';
 
 const TAB_DEFINITIONS = [
@@ -53,49 +58,39 @@ const canManageNotification = (notification) =>
 
 export default function NotificationList() {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [notificationToDelete, setNotificationToDelete] = useState(null);
   const [sendDialog, setSendDialog] = useState({ open: false, notification: null });
   const [tabValue, setTabValue] = useState('all');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+  const notificationsQuery = useNotifications();
+  const { data: notifications = [], error, isInitialLoading, isRefreshing } = useQueryStatus(notificationsQuery, {
+    hasData: (data) => Array.isArray(data),
+  });
+  const deleteNotificationMutation = useDeleteNotification();
+  const sendNotificationMutation = useSendNotification();
 
   useEffect(() => {
-    loadNotifications();
-  }, []);
-
-  const loadNotifications = async () => {
-    try {
-      setLoading(true);
-      const response = await notificationAPI.getAll();
-      if (response.data.success) {
-        setNotifications(response.data.data || []);
-      }
-    } catch (error) {
-      console.error('Error loading notifications:', error);
+    if (error) {
       setSnackbar({
         open: true,
-        message: error.response?.data?.message || 'Failed to load notifications',
+        message: error.message || 'Failed to load notifications',
         severity: 'error',
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error]);
 
   const handleDelete = async () => {
     try {
-      await notificationAPI.delete(notificationToDelete._id);
+      await deleteNotificationMutation.mutateAsync(notificationToDelete._id);
       setSnackbar({ open: true, message: 'Notification deleted successfully', severity: 'success' });
       setDeleteDialog(false);
       setNotificationToDelete(null);
-      loadNotifications();
     } catch (error) {
       console.error('Error deleting notification:', error);
       setSnackbar({
         open: true,
-        message: error.response?.data?.message || 'Failed to delete notification',
+        message: error.message || 'Failed to delete notification',
         severity: 'error',
       });
     }
@@ -103,21 +98,20 @@ export default function NotificationList() {
 
   const confirmSend = async () => {
     try {
-      const response = await notificationAPI.send(sendDialog.notification._id);
-      const { successCount = 0, failureCount = 0 } = response.data.data || {};
+      const response = await sendNotificationMutation.mutateAsync(sendDialog.notification._id);
+      const { successCount = 0, failureCount = 0 } = response || {};
       const message = failureCount > 0
         ? `Sent with ${successCount} success and ${failureCount} failure${failureCount === 1 ? '' : 's'}`
         : 'Notification sent successfully';
 
       setSendDialog({ open: false, notification: null });
       setSnackbar({ open: true, message, severity: failureCount > 0 ? 'warning' : 'success' });
-      loadNotifications();
     } catch (error) {
       console.error('Error sending notification:', error);
       setSendDialog({ open: false, notification: null });
       setSnackbar({
         open: true,
-        message: error.response?.data?.message || 'Failed to send notification',
+        message: error.message || 'Failed to send notification',
         severity: 'error',
       });
     }
@@ -349,7 +343,9 @@ export default function NotificationList() {
       <Table
         columns={columns}
         rows={filteredNotifications}
-        loading={loading}
+        loading={isInitialLoading}
+        fetching={isRefreshing}
+        loadingMessage="Loading notifications..."
         emptyMessage="No notifications found. Create one to start sending SMS updates."
         hover
       />

@@ -11,6 +11,7 @@ import {
   Typography,
   Box,
   CircularProgress,
+  LinearProgress,
 } from '@mui/material';
 
 /**
@@ -19,7 +20,8 @@ import {
  * @param {Object} props - Component props
  * @param {Array} props.columns - Column definitions [{field, headerName, width, renderCell}]
  * @param {Array} props.rows - Data rows (array of objects)
- * @param {boolean} props.loading - Whether table is loading
+ * @param {boolean} props.loading - Whether table is loading for the initial request
+ * @param {boolean} props.fetching - Whether table is refreshing while rows remain visible
  * @param {string} props.emptyMessage - Message to show when no data
  * @param {boolean} props.pagination - Whether to show pagination
  * @param {number} props.page - Current page (0-indexed)
@@ -35,6 +37,7 @@ const Table = ({
   columns = [],
   rows = [],
   loading = false,
+  fetching = false,
   emptyMessage = 'No data available',
   pagination = false,
   page = 0,
@@ -46,6 +49,7 @@ const Table = ({
   striped = false,
   sx = {},
   headerBgColor = '#f5f5f5',
+  loadingMessage = 'Loading...',
   ...otherProps
 }) => {
   const handleChangePage = (event, newPage) => {
@@ -64,7 +68,7 @@ const Table = ({
     return (
       <Paper sx={{ p: 4, textAlign: 'center', ...sx }}>
         <CircularProgress />
-        <Typography sx={{ mt: 2 }}>Loading...</Typography>
+        <Typography sx={{ mt: 2 }}>{loadingMessage}</Typography>
       </Paper>
     );
   }
@@ -78,7 +82,18 @@ const Table = ({
   }
 
   return (
-    <Paper sx={sx}>
+    <Paper sx={{ position: 'relative', ...sx }}>
+      {fetching && (
+        <LinearProgress
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1,
+          }}
+        />
+      )}
       <TableContainer>
         <MuiTable {...otherProps}>
           <TableHead>

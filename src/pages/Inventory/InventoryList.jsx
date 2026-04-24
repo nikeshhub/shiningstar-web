@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Typography,
@@ -25,7 +25,12 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Card, Select } from '../../components/common';
-import { inventoryAPI } from '../../hooks/reactQueryApi';
+import {
+  useAllDistributions,
+  useDeleteInventoryItem,
+  useInventoryItems,
+  useQueryStatus,
+} from '../../hooks';
 import { formatBSDate } from '../../utils/nepaliDate';
 import DistributeDialog from './DistributeDialog';
 import DistributeBookSetDialog from './DistributeBookSetDialog';
@@ -37,12 +42,6 @@ const paymentStatusColor = { Paid: 'success', Pending: 'warning', 'Linked to Fee
 
 export default function InventoryList() {
   const navigate = useNavigate();
-
-  const [inventory, setInventory] = useState([]);
-  const [distributions, setDistributions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [distLoading, setDistLoading] = useState(false);
-
   const [tabValue, setTabValue] = useState(0);
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
@@ -55,50 +54,50 @@ export default function InventoryList() {
   const [bookSetDialog, setBookSetDialog] = useState(false);
 
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+  const distributionParams = useMemo(
+    () => (filterPaymentStatus ? { paymentStatus: filterPaymentStatus } : {}),
+    [filterPaymentStatus]
+  );
+  const inventoryQuery = useInventoryItems();
+  const distributionsQuery = useAllDistributions(distributionParams, { enabled: tabValue === 3 });
+  const {
+    data: inventory = [],
+    error: inventoryError,
+    isInitialLoading,
+    isRefreshing,
+  } = useQueryStatus(inventoryQuery, {
+    hasData: (data) => Array.isArray(data),
+  });
+  const {
+    data: distributions = [],
+    error: distributionsError,
+    isInitialLoading: isDistInitialLoading,
+    isRefreshing: isDistRefreshing,
+  } = useQueryStatus(distributionsQuery, {
+    hasData: (data) => Array.isArray(data),
+  });
+  const deleteInventoryItemMutation = useDeleteInventoryItem();
 
   useEffect(() => {
-    loadInventory();
-  }, []);
-
-  useEffect(() => {
-    if (tabValue === 3) loadDistributions();
-  }, [tabValue, filterPaymentStatus]);
-
-  const loadInventory = async () => {
-    try {
-      setLoading(true);
-      const response = await inventoryAPI.getAll();
-      if (response.data.success) setInventory(response.data.data);
-    } catch {
+    if (inventoryError) {
       setSnackbar({ open: true, message: 'Failed to load inventory.', severity: 'error' });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [inventoryError]);
 
-  const loadDistributions = async () => {
-    try {
-      setDistLoading(true);
-      const params = {};
-      if (filterPaymentStatus) params.paymentStatus = filterPaymentStatus;
-      const response = await inventoryAPI.getAllDistributions(params);
-      if (response.data.success) setDistributions(response.data.data);
-    } catch {
+  useEffect(() => {
+    if (distributionsError) {
       setSnackbar({ open: true, message: 'Failed to load distributions.', severity: 'error' });
-    } finally {
-      setDistLoading(false);
     }
-  };
+  }, [distributionsError]);
 
   const handleDelete = async () => {
     try {
-      await inventoryAPI.delete(itemToDelete._id);
+      await deleteInventoryItemMutation.mutateAsync(itemToDelete._id);
       setSnackbar({ open: true, message: 'Item deleted successfully!', severity: 'success' });
       setDeleteDialog(false);
       setItemToDelete(null);
-      loadInventory();
     } catch (error) {
-      setSnackbar({ open: true, message: error.response?.data?.message || 'Failed to delete item', severity: 'error' });
+      setSnackbar({ open: true, message: error.message || 'Failed to delete item', severity: 'error' });
     }
   };
 
@@ -370,7 +369,9 @@ export default function InventoryList() {
         <Table
           columns={itemColumns}
           rows={filteredInventory}
-          loading={loading}
+          loading={isInitialLoading}
+          fetching={isRefreshing}
+          loadingMessage="Loading inventory..."
           emptyMessage="No inventory items found."
           hover
         />
@@ -379,7 +380,9 @@ export default function InventoryList() {
         <Table
           columns={itemColumns}
           rows={lowStockItems}
-          loading={loading}
+          loading={isInitialLoading}
+          fetching={isRefreshing}
+          loadingMessage="Loading inventory..."
           emptyMessage="No low stock items."
           hover
         />
@@ -388,7 +391,9 @@ export default function InventoryList() {
         <Table
           columns={itemColumns}
           rows={outOfStockItems}
-          loading={loading}
+          loading={isInitialLoading}
+          fetching={isRefreshing}
+          loadingMessage="Loading inventory..."
           emptyMessage="No out of stock items."
           hover
         />
@@ -422,7 +427,9 @@ export default function InventoryList() {
           <Table
             columns={distributionColumns}
             rows={distributions}
-            loading={distLoading}
+            loading={isDistInitialLoading}
+            fetching={isDistRefreshing}
+            loadingMessage="Loading distributions..."
             emptyMessage="No distribution records found."
             hover
           />
@@ -448,14 +455,14 @@ export default function InventoryList() {
         open={distributeDialog}
         onClose={() => { setDistributeDialog(false); setItemToDistribute(null); }}
         item={itemToDistribute}
-        onSuccess={() => { loadInventory(); if (tabValue === 3) loadDistributions(); }}
+        onSuccess={() => {}}
       />
 
       {/* Distribute Book Set Dialog */}
       <DistributeBookSetDialog
         open={bookSetDialog}
         onClose={() => setBookSetDialog(false)}
-        onSuccess={() => { loadInventory(); loadDistributions(); }}
+        onSuccess={() => {}}
       />
 
       <Snackbar

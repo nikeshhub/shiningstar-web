@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -19,35 +19,25 @@ import {
   AccountBalance as BalanceIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { familyAPI } from '../../hooks/reactQueryApi';
+import { useDeleteFamily, useFamilies, useQueryStatus } from '../../hooks';
 import { Table, Toast, Dialog } from '../../components/common';
 import { PageHeader } from '../../components/dashboard';
 
 export default function FamilyList() {
   const navigate = useNavigate();
-  const [families, setFamilies] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
   const [deleteDialog, setDeleteDialog] = useState({ open: false, familyId: null, familyName: '' });
+  const familiesQuery = useFamilies();
+  const { data: families = [], error, isInitialLoading, isRefreshing } = useQueryStatus(familiesQuery, {
+    hasData: (data) => Array.isArray(data),
+  });
+  const deleteFamilyMutation = useDeleteFamily();
 
   useEffect(() => {
-    loadFamilies();
-  }, []);
-
-  const loadFamilies = async () => {
-    try {
-      setLoading(true);
-      const response = await familyAPI.getAll();
-      if (response.data.success) {
-        setFamilies(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error loading families:', error);
+    if (error) {
       setToast({ open: true, message: 'Error loading families', severity: 'error' });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error]);
 
   const handleDelete = (family) => {
     setDeleteDialog({
@@ -59,10 +49,9 @@ export default function FamilyList() {
 
   const confirmDelete = async () => {
     try {
-      await familyAPI.delete(deleteDialog.familyId);
+      await deleteFamilyMutation.mutateAsync(deleteDialog.familyId);
       setDeleteDialog({ open: false, familyId: null, familyName: '' });
       setToast({ open: true, message: 'Family deleted successfully', severity: 'success' });
-      loadFamilies();
     } catch (error) {
       console.error('Error deleting family:', error);
       setDeleteDialog({ open: false, familyId: null, familyName: '' });
@@ -290,7 +279,9 @@ export default function FamilyList() {
           <Table
             columns={columns}
             rows={families}
-            loading={loading}
+            loading={isInitialLoading}
+            fetching={isRefreshing}
+            loadingMessage="Loading families..."
             pagination={true}
             rowsPerPage={10}
           />

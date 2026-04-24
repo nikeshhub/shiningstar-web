@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { Table, Button, Dialog, Toast } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { PageHeader } from '../../components/dashboard';
-import { useSubjects, useDeleteSubject } from '../../hooks';
+import { useDeleteSubject, useQueryStatus, useSubjects } from '../../hooks';
 
 export default function SubjectList() {
   const navigate = useNavigate();
@@ -25,7 +25,10 @@ export default function SubjectList() {
   const canManageSubjects = user?.role === 'Admin';
 
   // React Query hooks
-  const { data: subjects = [], isLoading: loading, error } = useSubjects();
+  const subjectsQuery = useSubjects();
+  const { data: subjects = [], error, isInitialLoading, isRefreshing } = useQueryStatus(subjectsQuery, {
+    hasData: (data) => Array.isArray(data),
+  });
   const deleteSubjectMutation = useDeleteSubject();
 
   // Show error toast if query fails
@@ -211,7 +214,9 @@ export default function SubjectList() {
       <Table
         columns={columns}
         rows={subjects}
-        loading={loading}
+        loading={isInitialLoading}
+        fetching={isRefreshing}
+        loadingMessage="Loading subjects..."
         emptyMessage="No subjects found. Click 'Add New Subject' to create one."
         hover
       />

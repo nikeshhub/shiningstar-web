@@ -2,15 +2,21 @@ import React from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button } from '../../components/common';
-import { useTeacher } from '../../hooks';
+import { Button, QueryState } from '../../components/common';
+import { useQueryStatus, useTeacher } from '../../hooks';
 import TeacherForm from './TeacherForm';
 
 export default function TeacherFormPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
-  const { data: teacherData = null } = useTeacher(id, { enabled: isEdit });
+  const teacherQuery = useTeacher(id, { enabled: isEdit });
+  const {
+    data: teacherData = null,
+    error,
+    isInitialLoading,
+    isRefreshing,
+  } = useQueryStatus(teacherQuery);
 
   const handleSuccess = () => {
     navigate('/dashboard/teachers');
@@ -37,7 +43,14 @@ export default function TeacherFormPage() {
       </Box>
 
       <Paper sx={{ p: 3 }}>
-        <TeacherForm teacherData={teacherData} onSuccess={handleSuccess} onCancel={handleCancel} />
+        <QueryState
+          isLoading={isEdit && isInitialLoading}
+          isRefreshing={isEdit && isRefreshing}
+          error={isEdit ? error : null}
+          loadingText="Loading teacher details..."
+        >
+          <TeacherForm teacherData={teacherData} onSuccess={handleSuccess} onCancel={handleCancel} />
+        </QueryState>
       </Paper>
     </Box>
   );

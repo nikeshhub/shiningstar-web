@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -12,34 +12,24 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Dialog, Toast, StatusChip } from '../../components/common';
-import { teacherAPI } from '../../hooks/reactQueryApi';
+import { useDeleteTeacher, useQueryStatus, useTeachers } from '../../hooks';
 
 export default function TeacherList() {
   const navigate = useNavigate();
-  const [teachers, setTeachers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
+  const teachersQuery = useTeachers();
+  const { data: teachers = [], error, isInitialLoading, isRefreshing } = useQueryStatus(teachersQuery, {
+    hasData: (data) => Array.isArray(data),
+  });
+  const deleteTeacherMutation = useDeleteTeacher();
 
   useEffect(() => {
-    loadTeachers();
-  }, []);
-
-  const loadTeachers = async () => {
-    try {
-      setLoading(true);
-      const response = await teacherAPI.getAll();
-      if (response.data.success) {
-        setTeachers(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error loading teachers:', error);
+    if (error) {
       setToast({ open: true, message: 'Failed to load teachers.', severity: 'error' });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error]);
 
   const handleAdd = () => {
     navigate('/dashboard/teachers/add');
@@ -51,16 +41,10 @@ export default function TeacherList() {
 
   const handleDelete = async () => {
     try {
-      const response = await teacherAPI.delete(teacherToDelete._id);
-      if (response.data.success) {
-        setToast({ open: true, message: 'Teacher deleted successfully!', severity: 'success' });
-        setDeleteDialog(false);
-        setTeacherToDelete(null);
-        loadTeachers();
-      } else {
-        setToast({ open: true, message: response.data.message, severity: 'error' });
-        setDeleteDialog(false);
-      }
+      await deleteTeacherMutation.mutateAsync(teacherToDelete._id);
+      setToast({ open: true, message: 'Teacher deleted successfully!', severity: 'success' });
+      setDeleteDialog(false);
+      setTeacherToDelete(null);
     } catch (error) {
       console.error('Error deleting teacher:', error);
       setToast({ open: true, message: 'Failed to delete teacher', severity: 'error' });
@@ -155,7 +139,9 @@ export default function TeacherList() {
       <Table
         columns={columns}
         rows={teachers}
-        loading={loading}
+        loading={isInitialLoading}
+        fetching={isRefreshing}
+        loadingMessage="Loading teachers..."
         emptyMessage="No teachers found. Click 'Add New Teacher' to create one."
         hover
       />
