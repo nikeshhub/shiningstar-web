@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Dialog, Table } from '../../components/common';
+import { PageHeader } from '../../components/dashboard';
 import {
   useDeleteNotification,
   useNotifications,
@@ -270,14 +271,14 @@ export default function NotificationList() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-          Notifications (सूचना व्यवस्थापन)
-        </Typography>
-        <Button startIcon={<AddIcon />} onClick={() => navigate('/dashboard/notifications/add')}>
-          Create Notification
-        </Button>
-      </Box>
+      <PageHeader
+        title="<em>Notifications</em> (सूचना व्यवस्थापन)"
+        action={(
+          <Button startIcon={<AddIcon />} onClick={() => navigate('/dashboard/notifications/add')}>
+            Create Notification
+          </Button>
+        )}
+      />
 
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Card sx={{ flex: 1, minWidth: 180 }} contentSx={{ textAlign: 'center' }}>

@@ -23,9 +23,22 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  const normalizeIdentifier = (identifier) => {
+    const normalized = String(identifier || '').trim();
+
+    if (normalized.includes('@')) {
+      return normalized.toLowerCase();
+    }
+
+    return normalized;
+  };
+
   const login = async (identifier, password) => {
     try {
-      const data = await loginMutation.mutateAsync({ identifier, password });
+      const data = await loginMutation.mutateAsync({
+        identifier: normalizeIdentifier(identifier),
+        password,
+      });
       const { user: userData, token: userToken } = data;
 
       localStorage.setItem('token', userToken);

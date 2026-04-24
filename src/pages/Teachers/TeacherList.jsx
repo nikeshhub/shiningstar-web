@@ -12,6 +12,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, Dialog, Toast, StatusChip } from '../../components/common';
+import { PageHeader } from '../../components/dashboard';
 import { useDeleteTeacher, useQueryStatus, useTeachers } from '../../hooks';
 
 export default function TeacherList() {
@@ -127,14 +128,14 @@ export default function TeacherList() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-          Teachers Management (शिक्षक व्यवस्थापन)
-        </Typography>
-        <Button startIcon={<AddIcon />} onClick={handleAdd}>
-          Add New Teacher
-        </Button>
-      </Box>
+      <PageHeader
+        title="<em>Teachers</em> Management (शिक्षक व्यवस्थापन)"
+        action={(
+          <Button startIcon={<AddIcon />} onClick={handleAdd}>
+            Add New Teacher
+          </Button>
+        )}
+      />
 
       <Table
         columns={columns}

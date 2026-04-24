@@ -43,8 +43,10 @@ const PageHeader = ({ title, breadcrumbs = [], action, ...props }) => {
     <Box
       sx={{
         display: 'flex',
-        alignItems: 'center',
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'flex-start', sm: 'center' },
         justifyContent: 'space-between',
+        gap: 1.5,
         mb: 3,
       }}
       {...props}
@@ -91,7 +93,20 @@ const PageHeader = ({ title, breadcrumbs = [], action, ...props }) => {
           {renderTitle()}
         </Typography>
       </Box>
-      {action && <Box>{action}</Box>}
+      {action && (
+        <Box
+          sx={{
+            width: { xs: '100%', sm: 'auto' },
+            display: 'flex',
+            justifyContent: { xs: 'stretch', sm: 'flex-end' },
+            '& > *': {
+              width: { xs: '100%', sm: 'auto' },
+            },
+          }}
+        >
+          {action}
+        </Box>
+      )}
     </Box>
   );
 };
