@@ -224,6 +224,8 @@ export const bsToADISOString = (value) => {
  */
 export const todayBSDate = () => adToBSDate(new Date());
 
+export const currentBSYear = () => getCurrentBSDateParts()?.year ?? parseInt(adToBSDate(new Date()).substring(0, 4), 10);
+
 /**
  * Returns BS year/month/date fields or null.
  */
@@ -345,6 +347,7 @@ const api = {
   getBSMonthOptions,
   getBSYearOptions,
   getCurrentBSDateParts,
+  currentBSYear,
   normalizeBSDate,
   todayBSDate,
   toBS,

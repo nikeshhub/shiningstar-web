@@ -7,16 +7,32 @@ import {
   Card,
   CardContent,
   alpha,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Table as MuiTable,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   Person as PersonIcon,
   ContactPhone as ContactIcon,
   Home as HomeIcon,
+  Add as AddIcon,
+  Close as CloseIcon,
+  School as SchoolIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Toast, Select } from '../../components/common';
-import { familyAPI } from '../../hooks/reactQueryApi';
+import { familyAPI, studentAPI, classAPI } from '../../hooks/reactQueryApi';
+import { todayBSDate, currentBSYear } from '../../utils/nepaliDate';
 
 const RELATION_OPTIONS = ['Father', 'Mother', 'Guardian'];
 const STATUS_OPTIONS = ['Active', 'Inactive'];
@@ -48,11 +64,21 @@ export default function FamilyForm() {
 
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
+  const [classes, setClasses] = useState([]);
+  const [createStudentOpen, setCreateStudentOpen] = useState(false);
+  const [creatingStudent, setCreatingStudent] = useState(false);
+  const [createdFamily, setCreatedFamily] = useState(null);
+  const [addedStudents, setAddedStudents] = useState([]);
+  const initStudentForm = { name: '', gender: '', dateOfBirth: '', currentClass: '', admissionDate: todayBSDate(), academicYear: String(currentBSYear()) };
+  const [studentForm, setStudentForm] = useState(initStudentForm);
 
   useEffect(() => {
     if (isEdit) {
       loadFamily();
     }
+    classAPI.getAll({ status: 'Active' })
+      .then(res => { if (res.data.success) setClasses(res.data.data); })
+      .catch(console.error);
   }, [id]);
 
   const loadFamily = async () => {
@@ -88,6 +114,37 @@ export default function FamilyForm() {
     }));
   };
 
+  const handleCreateStudent = async () => {
+    const { name, gender, dateOfBirth, currentClass } = studentForm;
+    if (!name || !gender || !dateOfBirth || !currentClass) {
+      setToast({ open: true, message: 'Student name, gender, date of birth, and class are required', severity: 'error' });
+      return;
+    }
+    const familyId = isEdit ? id : createdFamily?._id;
+    try {
+      setCreatingStudent(true);
+      const response = await studentAPI.create({ ...studentForm, family: familyId });
+      const newStudent = response.data.data;
+      setToast({ open: true, message: 'Student added successfully!', severity: 'success' });
+      setCreateStudentOpen(false);
+      setStudentForm(initStudentForm);
+      if (isEdit) {
+        loadFamily();
+      } else {
+        const classLabel = classes.find(c => c._id === studentForm.currentClass)?.className || '';
+        setAddedStudents(prev => [...prev, { _id: newStudent._id, studentId: newStudent.studentId, name: newStudent.name, className: classLabel }]);
+      }
+    } catch (error) {
+      setToast({
+        open: true,
+        message: error.response?.data?.message || error.message || 'Error creating student',
+        severity: 'error',
+      });
+    } finally {
+      setCreatingStudent(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -108,12 +165,12 @@ export default function FamilyForm() {
         : await familyAPI.create(formData);
 
       if (response.data.success) {
-        setToast({
-          open: true,
-          message: `Family ${isEdit ? 'updated' : 'created'} successfully!`,
-          severity: 'success',
-        });
-        setTimeout(() => navigate('/dashboard/families'), 1500);
+        if (isEdit) {
+          setToast({ open: true, message: 'Family updated successfully!', severity: 'success' });
+          setTimeout(() => navigate('/dashboard/families'), 1500);
+        } else {
+          setCreatedFamily(response.data.data);
+        }
       }
     } catch (error) {
       console.error('Error saving family:', error);
@@ -126,6 +183,145 @@ export default function FamilyForm() {
       setLoading(false);
     }
   };
+
+  // Post-creation view: family created, now optionally add students
+  if (createdFamily) {
+    return (
+      <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3 }}>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: 'text.primary', mb: 1 }}>
+            Family Created
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {createdFamily.familyId} · {createdFamily.primaryContact.name} · {createdFamily.primaryContact.mobile}
+          </Typography>
+        </Box>
+
+        <Card sx={{ mb: 3, boxShadow: 2, borderRadius: 2 }}>
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <SchoolIcon color="primary" />
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                  Add Students
+                </Typography>
+              </Box>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<AddIcon />}
+                onClick={() => { setStudentForm(initStudentForm); setCreateStudentOpen(true); }}
+              >
+                Add Student
+              </Button>
+            </Box>
+            {addedStudents.length > 0 ? (
+              <TableContainer component={Paper} variant="outlined">
+                <MuiTable size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 600, bgcolor: 'grey.100' }}>Student ID</TableCell>
+                      <TableCell sx={{ fontWeight: 600, bgcolor: 'grey.100' }}>Name</TableCell>
+                      <TableCell sx={{ fontWeight: 600, bgcolor: 'grey.100' }}>Class</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {addedStudents.map(s => (
+                      <TableRow key={s._id}>
+                        <TableCell>{s.studentId}</TableCell>
+                        <TableCell>{s.name}</TableCell>
+                        <TableCell>{s.className}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </MuiTable>
+              </TableContainer>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No students added yet. You can add them now or later from the family edit page.
+              </Typography>
+            )}
+          </CardContent>
+        </Card>
+
+        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', p: 3, bgcolor: alpha('#f5f5f5', 0.5), borderRadius: 2, mb: 4 }}>
+          <Button variant="contained" onClick={() => navigate('/dashboard/families')} sx={{ minWidth: 120 }}>
+            Done
+          </Button>
+        </Box>
+
+        {/* Add Student Dialog (create mode) */}
+        <Dialog open={createStudentOpen} onClose={() => setCreateStudentOpen(false)} maxWidth="md" fullWidth>
+          <DialogTitle>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              Add Student to Family
+              <IconButton size="small" onClick={() => setCreateStudentOpen(false)}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2} sx={{ mt: 0.5 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField fullWidth label="Student Name" required
+                  value={studentForm.name}
+                  onChange={e => setStudentForm(p => ({ ...p, name: e.target.value }))}
+                  placeholder="e.g., Sita Sharma"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Select label="Gender" required allowNone={false}
+                  value={studentForm.gender}
+                  onChange={e => setStudentForm(p => ({ ...p, gender: e.target.value }))}
+                  options={['Male', 'Female', 'Other']}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField fullWidth label="Date of Birth (BS)" required
+                  value={studentForm.dateOfBirth}
+                  onChange={e => setStudentForm(p => ({ ...p, dateOfBirth: e.target.value }))}
+                  placeholder="e.g., 2060-01-15"
+                  helperText="Enter in BS format: YYYY-MM-DD"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Select label="Class" required allowNone={false}
+                  value={studentForm.currentClass}
+                  onChange={e => setStudentForm(p => ({ ...p, currentClass: e.target.value }))}
+                  options={classes.map(c => ({ label: c.className, value: c._id }))}
+                  placeholder="Select class"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField fullWidth label="Admission Date (BS)" required
+                  value={studentForm.admissionDate}
+                  onChange={e => setStudentForm(p => ({ ...p, admissionDate: e.target.value }))}
+                  helperText="Enter in BS format: YYYY-MM-DD"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField fullWidth label="Academic Year" required
+                  value={studentForm.academicYear}
+                  onChange={e => setStudentForm(p => ({ ...p, academicYear: e.target.value }))}
+                  placeholder="e.g., 2083"
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 3 }}>
+            <Button variant="outlined" onClick={() => setCreateStudentOpen(false)} disabled={creatingStudent}>
+              Cancel
+            </Button>
+            <Button variant="contained" onClick={handleCreateStudent} loading={creatingStudent}>
+              Add Student
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Toast toast={toast} onClose={() => setToast({ ...toast, open: false })} />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3 }}>
