@@ -16,11 +16,13 @@ import {
   DialogActions,
   TextField,
   Grid,
+  Autocomplete,
+  Chip,
 } from '@mui/material';
-import { Edit as EditIcon, Person as PersonIcon, MenuBook as BookIcon } from '@mui/icons-material';
+import { Edit as EditIcon, Person as PersonIcon, MenuBook as BookIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, DetailPage, DetailSection, DetailRow, StatusChip, Table, Toast } from '../../components/common';
-import { classAPI, timetableAPI } from '../../hooks/reactQueryApi';
+import { classAPI, timetableAPI, subjectAPI } from '../../hooks/reactQueryApi';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ClassDetail() {
@@ -39,13 +41,30 @@ export default function ClassDetail() {
     coverPhoto: '',
   });
   const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
+  const [editSubjectsOpen, setEditSubjectsOpen] = useState(false);
+  const [allSubjects, setAllSubjects] = useState([]);
+  const [selectedSubjectIds, setSelectedSubjectIds] = useState([]);
+  const [savingSubjects, setSavingSubjects] = useState(false);
   const canManageClass = user?.role === 'Admin';
   const showFinancialDetails = user?.role === 'Admin';
 
   useEffect(() => {
     loadClass();
     loadTimetable();
+    subjectAPI.getAll()
+      .then(res => { if (res.data.success) setAllSubjects(res.data.data); })
+      .catch(console.error);
   }, [id]);
+
+  useEffect(() => {
+    if (classData) {
+      setSelectedSubjectIds(
+        (classData.subjects || []).map(s =>
+          typeof s.subject === 'object' ? s.subject._id : s.subject
+        )
+      );
+    }
+  }, [classData]);
 
   const loadClass = async () => {
     try {
@@ -93,11 +112,38 @@ export default function ClassDetail() {
       if (response.data.success) {
         setToast({ open: true, message: 'Book information saved successfully!', severity: 'success' });
         setBookDialog(false);
-        loadClass(); // Reload to get updated data
+        loadClass();
       }
     } catch (error) {
       console.error('Error saving book:', error);
       setToast({ open: true, message: 'Failed to save book information', severity: 'error' });
+    }
+  };
+
+  const handleOpenEditSubjects = () => {
+    setSelectedSubjectIds(
+      (classData.subjects || []).map(s =>
+        typeof s.subject === 'object' ? s.subject._id : s.subject
+      )
+    );
+    setEditSubjectsOpen(true);
+  };
+
+  const handleSaveSubjects = async () => {
+    try {
+      setSavingSubjects(true);
+      await classAPI.update(id, { subjects: selectedSubjectIds });
+      setToast({ open: true, message: 'Subjects updated successfully!', severity: 'success' });
+      setEditSubjectsOpen(false);
+      loadClass();
+    } catch (error) {
+      setToast({
+        open: true,
+        message: error.response?.data?.message || error.message || 'Error updating subjects',
+        severity: 'error',
+      });
+    } finally {
+      setSavingSubjects(false);
     }
   };
 
@@ -274,11 +320,18 @@ export default function ClassDetail() {
         )}
       </Box>
 
-      {/* Subject Books */}
+      {/* Subjects */}
       <Box sx={{ mt: 3 }}>
-        <Typography variant="h6" sx={{ mb: 1.5, fontWeight: 600 }}>
-          Subject Books
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Subjects
+          </Typography>
+          {canManageClass && (
+            <Button size="small" startIcon={<EditIcon />} onClick={handleOpenEditSubjects}>
+              Edit Subjects
+            </Button>
+          )}
+        </Box>
         {classData.subjects && classData.subjects.length > 0 ? (
           <TableContainer component={Paper} variant="outlined">
             <MuiTable size="small">
@@ -416,6 +469,52 @@ export default function ClassDetail() {
           </Button>
           <Button variant="contained" onClick={handleSaveBook}>
             Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Subjects Dialog */}
+      <Dialog open={editSubjectsOpen} onClose={() => setEditSubjectsOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            Edit Subjects
+            <IconButton size="small" onClick={() => setEditSubjectsOpen(false)}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, mt: 1 }}>
+            Select subjects to assign to this class. Existing book assignments are preserved.
+          </Typography>
+          <Autocomplete
+            multiple
+            options={allSubjects}
+            getOptionLabel={(opt) => `${opt.subjectName} (${opt.subjectCode})`}
+            value={allSubjects.filter(s => selectedSubjectIds.includes(s._id))}
+            onChange={(_, newValue) => setSelectedSubjectIds(newValue.map(s => s._id))}
+            isOptionEqualToValue={(opt, val) => opt._id === val._id}
+            renderInput={(params) => (
+              <TextField {...params} label="Subjects" placeholder="Search and select subjects..." />
+            )}
+            renderTags={(tagValue, getTagProps) =>
+              tagValue.map((option, index) => (
+                <Chip
+                  key={option._id}
+                  label={`${option.subjectName} (${option.subjectCode})`}
+                  {...getTagProps({ index })}
+                  size="small"
+                />
+              ))
+            }
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button variant="outlined" onClick={() => setEditSubjectsOpen(false)} disabled={savingSubjects}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleSaveSubjects} loading={savingSubjects}>
+            Save Subjects
           </Button>
         </DialogActions>
       </Dialog>

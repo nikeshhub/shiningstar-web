@@ -19,12 +19,13 @@ import {
   Description as DocumentIcon,
   UploadFile as UploadIcon,
   Close as CloseIcon,
+  Add as AddIcon,
 } from '@mui/icons-material';
-import { IconButton } from '@mui/material';
+import { IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, FormField, FormSelect, FormAutocompleteSelect, Toast } from '../../components/common';
+import { Button, FormField, FormSelect, FormAutocompleteSelect, Toast, Select } from '../../components/common';
 import { studentAPI, classAPI, familyAPI } from '../../hooks/reactQueryApi';
-import { adToBSDate, todayBSDate } from '../../utils/nepaliDate';
+import { adToBSDate, todayBSDate, currentBSYear } from '../../utils/nepaliDate';
 import { resolveAssetUrl } from '../../config/env';
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
@@ -77,7 +78,16 @@ export default function StudentForm() {
   const videoRef = React.useRef(null);
   const canvasRef = React.useRef(null);
 
-  const { control, handleSubmit, reset, formState: { isSubmitting } } = useForm({
+  const initFamilyForm = {
+    primaryContact: { name: '', relation: 'Father', citizenship: '', mobile: '', alternateMobile: '', email: '' },
+    address: '',
+    remarks: '',
+  };
+  const [createFamilyOpen, setCreateFamilyOpen] = useState(false);
+  const [familyForm, setFamilyForm] = useState(initFamilyForm);
+  const [creatingFamily, setCreatingFamily] = useState(false);
+
+  const { control, handleSubmit, reset, setValue, formState: { isSubmitting } } = useForm({
     resolver: zodResolver(studentSchema),
     defaultValues: {
       name: '',
@@ -87,7 +97,7 @@ export default function StudentForm() {
       currentClass: '',
       rollNumber: undefined,
       admissionDate: todayBSDate(),
-      academicYear: '2081-2082',
+      academicYear: String(currentBSYear()),
       previousSchool: '',
       birthCertificate: '',
       photo: '',
@@ -117,7 +127,7 @@ export default function StudentForm() {
             currentClass: s.currentClass?._id || s.currentClass || '',
             rollNumber: s.rollNumber ?? undefined,
             admissionDate: adToBSDate(s.admissionDate),
-            academicYear: s.academicYear || '2081-2082',
+            academicYear: s.academicYear || String(currentBSYear()),
             previousSchool: s.previousSchool || '',
             birthCertificate: s.birthCertificate || '',
             photo: s.photo || '',
@@ -140,6 +150,32 @@ export default function StudentForm() {
     label: `${f.familyId} - ${f.primaryContact.name}`,
     value: f._id
   }));
+
+  const handleCreateFamily = async () => {
+    const { name, citizenship, mobile } = familyForm.primaryContact;
+    if (!name || !citizenship || !mobile || !familyForm.address) {
+      setToast({ open: true, message: 'Primary contact name, citizenship, mobile, and address are required', severity: 'error' });
+      return;
+    }
+    try {
+      setCreatingFamily(true);
+      const response = await familyAPI.create(familyForm);
+      const newFamily = response.data.data;
+      setFamilies(prev => [newFamily, ...prev]);
+      setValue('family', newFamily._id);
+      setCreateFamilyOpen(false);
+      setFamilyForm(initFamilyForm);
+      setToast({ open: true, message: `Family ${newFamily.familyId} created and selected!`, severity: 'success' });
+    } catch (error) {
+      setToast({
+        open: true,
+        message: error.response?.data?.message || error.message || 'Error creating family',
+        severity: 'error',
+      });
+    } finally {
+      setCreatingFamily(false);
+    }
+  };
 
   const onSubmit = async (data) => {
     try {
@@ -312,15 +348,24 @@ export default function StudentForm() {
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6 }}>
-                <FormAutocompleteSelect
-                  control={control}
-                  name="family"
-                  label="Family"
-                  options={familyOptions}
-                  required
-                  placeholder="Type to search family..."
-                  helperText="Parent/Guardian contact information"
-                />
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                  <Box sx={{ flex: 1 }}>
+                    <FormAutocompleteSelect
+                      control={control}
+                      name="family"
+                      label="Family"
+                      options={familyOptions}
+                      required
+                      placeholder="Type to search family..."
+                      helperText="Parent/Guardian contact information"
+                    />
+                  </Box>
+                  <Tooltip title="Create new family">
+                    <IconButton color="primary" onClick={() => setCreateFamilyOpen(true)} sx={{ mt: 1 }}>
+                      <AddIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
               </Grid>
 
               {isEdit && (
@@ -397,7 +442,7 @@ export default function StudentForm() {
                   name="academicYear"
                   label="Academic Year"
                   required
-                  placeholder="e.g., 2081-2082"
+                  placeholder="e.g., 2083"
                   helperText="Nepali academic year"
                 />
               </Grid>
@@ -609,6 +654,99 @@ export default function StudentForm() {
           </Button>
         </Box>
       </Box>
+
+      {/* Create Family Dialog */}
+      <Dialog open={createFamilyOpen} onClose={() => setCreateFamilyOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            Create New Family
+            <IconButton size="small" onClick={() => setCreateFamilyOpen(false)}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} sx={{ mt: 0.5 }}>
+            <Grid size={12}>
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                Primary Contact
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth label="Name" required
+                value={familyForm.primaryContact.name}
+                onChange={e => setFamilyForm(p => ({ ...p, primaryContact: { ...p.primaryContact, name: e.target.value } }))}
+                placeholder="e.g., Ram Prasad Sharma"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Select
+                label="Relation" required allowNone={false}
+                value={familyForm.primaryContact.relation}
+                onChange={e => setFamilyForm(p => ({ ...p, primaryContact: { ...p.primaryContact, relation: e.target.value } }))}
+                options={['Father', 'Mother', 'Guardian']}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth label="Citizenship" required
+                value={familyForm.primaryContact.citizenship}
+                onChange={e => setFamilyForm(p => ({ ...p, primaryContact: { ...p.primaryContact, citizenship: e.target.value } }))}
+                placeholder="e.g., Nepali"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth label="Mobile Number" required
+                value={familyForm.primaryContact.mobile}
+                onChange={e => setFamilyForm(p => ({ ...p, primaryContact: { ...p.primaryContact, mobile: e.target.value } }))}
+                placeholder="e.g., 9841234567"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth label="Alternate Mobile"
+                value={familyForm.primaryContact.alternateMobile}
+                onChange={e => setFamilyForm(p => ({ ...p, primaryContact: { ...p.primaryContact, alternateMobile: e.target.value } }))}
+                placeholder="e.g., 9801234567"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth label="Email" type="email"
+                value={familyForm.primaryContact.email}
+                onChange={e => setFamilyForm(p => ({ ...p, primaryContact: { ...p.primaryContact, email: e.target.value } }))}
+                placeholder="e.g., parent@example.com"
+              />
+            </Grid>
+            <Grid size={12}>
+              <TextField
+                fullWidth label="Address" required multiline rows={2}
+                value={familyForm.address}
+                onChange={e => setFamilyForm(p => ({ ...p, address: e.target.value }))}
+                placeholder="e.g., Yangwarak-4, Tharpu, Panchthar"
+              />
+            </Grid>
+            <Grid size={12}>
+              <TextField
+                fullWidth label="Remarks" multiline rows={2}
+                value={familyForm.remarks}
+                onChange={e => setFamilyForm(p => ({ ...p, remarks: e.target.value }))}
+                placeholder="Any additional notes about the family"
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button variant="outlined" onClick={() => setCreateFamilyOpen(false)} disabled={creatingFamily}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleCreateFamily} loading={creatingFamily}>
+            Create Family
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Toast toast={toast} onClose={() => setToast({ ...toast, open: false })} />
     </Box>
